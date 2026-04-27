@@ -193,6 +193,25 @@ mcp-agentic-data-pipeline/
 
 ---
 
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="assets/chart1_ai_adoption.png" alt="AI Adoption" width="100%"></td>
+    <td><img src="assets/chart2_comp_country.png" alt="Compensation by Country" width="100%"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/chart3_ai_sentiment.png" alt="AI Sentiment" width="100%"></td>
+    <td><img src="assets/chart4_comp_curve.png" alt="Compensation Curve" width="100%"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/chart5_ai_threat.png" alt="AI Threat Perception" width="100%"></td>
+    <td></td>
+  </tr>
+</table>
+
+---
+
 ## License
 
 MIT — use freely, attribution appreciated.
