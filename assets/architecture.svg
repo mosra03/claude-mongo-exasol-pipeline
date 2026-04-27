@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 390" width="920" height="390">
+  <defs>
+    <marker id="arr-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#e94560"/>
+    </marker>
+    <marker id="arr-dim" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="920" height="390" fill="#1a1a2e" rx="8"/>
+
+  <!-- ═══ SECTION LABEL: DATA LAYER ═══ -->
+  <text x="16" y="22" font-family="system-ui,-apple-system,sans-serif" font-size="8" font-weight="600" fill="#334155" letter-spacing="1">DATA LAYER</text>
+
+  <!-- MongoDB Atlas -->
+  <rect x="16" y="32" width="158" height="74" rx="6" fill="#16213e" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="95" y="52" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="10" font-weight="700" fill="#4ade80">MongoDB Atlas</text>
+  <text x="95" y="68" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9" fill="#94a3b8">stackoverflow</text>
+  <text x="95" y="82" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9" fill="#94a3b8">.survey_2025</text>
+  <text x="95" y="97" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#475569">49,191 docs · 173 fields</text>
+
+  <!-- Arrow: MongoDB → exasol-json-tables -->
+  <line x1="176" y1="69" x2="228" y2="69" stroke="#e94560" stroke-width="1.5" marker-end="url(#arr-red)"/>
+  <text x="202" y="61" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#94a3b8">export NDJSON</text>
+
+  <!-- exasol-json-tables bridge -->
+  <rect x="230" y="44" width="178" height="50" rx="5" fill="#16213e" stroke="#475569" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="319" y="64" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9.5" font-weight="600" fill="#cbd5e1">exasol-json-tables</text>
+  <text x="319" y="80" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#64748b">NDJSON → native SQL tables</text>
+
+  <!-- Arrow: exasol-json-tables → Exasol SaaS -->
+  <line x1="410" y1="69" x2="460" y2="69" stroke="#e94560" stroke-width="1.5" marker-end="url(#arr-red)"/>
+  <text x="435" y="61" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#94a3b8">ingest + wrap</text>
+
+  <!-- Exasol SaaS — highlighted as primary analytics engine -->
+  <rect x="462" y="32" width="180" height="74" rx="6" fill="#0d1f35" stroke="#e94560" stroke-width="2"/>
+  <text x="552" y="52" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="10" font-weight="700" fill="#e94560">Exasol SaaS</text>
+  <text x="552" y="68" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9" fill="#94a3b8">in-memory MPP analytics</text>
+  <text x="552" y="82" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9" fill="#94a3b8">columnar engine</text>
+  <text x="552" y="97" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#475569">sub-second queries</text>
+
+  <!-- ═══ ORCHESTRATOR BAR ═══ -->
+  <rect x="16" y="138" width="888" height="40" rx="6" fill="#1e1e3a" stroke="#e94560" stroke-width="1.5"/>
+  <text x="460" y="154" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="700" fill="#e94560">Claude Code — Orchestrator</text>
+  <text x="460" y="170" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9" fill="#64748b">validates recipes · enforces agent sequencing · retries on failure</text>
+
+  <!-- Dashed connectors from orchestrator to each agent -->
+  <line x1="95"  y1="178" x2="95"  y2="206" stroke="#334155" stroke-width="1" stroke-dasharray="3 2"/>
+  <line x1="260" y1="178" x2="260" y2="206" stroke="#334155" stroke-width="1" stroke-dasharray="3 2"/>
+  <line x1="425" y1="178" x2="425" y2="206" stroke="#334155" stroke-width="1" stroke-dasharray="3 2"/>
+  <line x1="590" y1="178" x2="590" y2="206" stroke="#334155" stroke-width="1" stroke-dasharray="3 2"/>
+
+  <!-- ═══ AGENTS ROW ═══ -->
+
+  <!-- Agent 1: Scientist -->
+  <rect x="16" y="206" width="158" height="84" rx="6" fill="#16213e" stroke="#334155" stroke-width="1.5"/>
+  <text x="95" y="227" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="700" fill="#e2e8f0">Scientist</text>
+  <text x="95" y="244" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#94a3b8">explore schema</text>
+  <text x="95" y="258" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#94a3b8">discover 5 patterns</text>
+  <rect x="28" y="270" width="134" height="14" rx="3" fill="#0f2d20"/>
+  <text x="95" y="280" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" font-weight="600" fill="#4ade80">MongoDB MCP</text>
+
+  <!-- Arrow 01 -->
+  <line x1="176" y1="248" x2="200" y2="248" stroke="#e94560" stroke-width="1.5" marker-end="url(#arr-red)"/>
+  <text x="188" y="241" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="7" fill="#475569">01</text>
+
+  <!-- Agent 2: Chef -->
+  <rect x="202" y="206" width="158" height="84" rx="6" fill="#16213e" stroke="#334155" stroke-width="1.5"/>
+  <text x="281" y="227" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="700" fill="#e2e8f0">Chef</text>
+  <text x="281" y="244" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#94a3b8">aggregate in Mongo</text>
+  <text x="281" y="258" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#94a3b8">migrate → Exasol</text>
+  <rect x="214" y="270" width="134" height="14" rx="3" fill="#0d1f35"/>
+  <text x="281" y="280" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" font-weight="600" fill="#e94560">Exasol MCP</text>
+
+  <!-- Arrow 02 -->
+  <line x1="362" y1="248" x2="386" y2="248" stroke="#e94560" stroke-width="1.5" marker-end="url(#arr-red)"/>
+  <text x="374" y="241" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="7" fill="#475569">02</text>
+
+  <!-- Agent 3: Artist -->
+  <rect x="388" y="206" width="158" height="84" rx="6" fill="#16213e" stroke="#334155" stroke-width="1.5"/>
+  <text x="467" y="227" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="700" fill="#e2e8f0">Artist</text>
+  <text x="467" y="244" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#94a3b8">query Exasol</text>
+  <text x="467" y="258" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#94a3b8">generate ECharts configs</text>
+  <rect x="400" y="270" width="134" height="14" rx="3" fill="#0d1f35"/>
+  <text x="467" y="280" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" font-weight="600" fill="#e94560">Exasol MCP</text>
+
+  <!-- Arrow 03 -->
+  <line x1="548" y1="248" x2="572" y2="248" stroke="#e94560" stroke-width="1.5" marker-end="url(#arr-red)"/>
+  <text x="560" y="241" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="7" fill="#475569">03</text>
+
+  <!-- Agent 4: Postman -->
+  <rect x="574" y="206" width="158" height="84" rx="6" fill="#16213e" stroke="#334155" stroke-width="1.5"/>
+  <text x="653" y="227" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="12" font-weight="700" fill="#e2e8f0">Postman</text>
+  <text x="653" y="244" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#94a3b8">write web app</text>
+  <text x="653" y="258" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#94a3b8">start server</text>
+  <rect x="586" y="270" width="134" height="14" rx="3" fill="#16213e" stroke="#334155" stroke-width="0.5"/>
+  <text x="653" y="280" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#64748b">Python http.server</text>
+
+  <!-- Arrow: Postman → cloudflared -->
+  <line x1="734" y1="248" x2="758" y2="248" stroke="#e94560" stroke-width="1.5" marker-end="url(#arr-red)"/>
+
+  <!-- cloudflared -->
+  <rect x="760" y="218" width="110" height="62" rx="6" fill="#16213e" stroke="#475569" stroke-width="1.5"/>
+  <text x="815" y="240" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="10" font-weight="600" fill="#cbd5e1">cloudflared</text>
+  <text x="815" y="256" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#64748b">Quick Tunnel</text>
+  <text x="815" y="272" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#475569">HTTPS · no account</text>
+
+  <!-- Arrow: cloudflared → Public URL -->
+  <line x1="872" y1="249" x2="886" y2="249" stroke="#e94560" stroke-width="1.5" marker-end="url(#arr-red)"/>
+
+  <!-- Public URL badge -->
+  <rect x="888" y="226" width="22" height="46" rx="4" fill="#0f3020" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="899" y="243" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="7" font-weight="700" fill="#4ade80">Pub</text>
+  <text x="899" y="256" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="7" font-weight="700" fill="#4ade80">lic</text>
+  <text x="899" y="269" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="7" font-weight="700" fill="#4ade80">URL</text>
+
+  <!-- ═══ RECIPE HANDOFF LABEL ═══ -->
+  <text x="460" y="318" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#334155">
+    01_scientist_patterns.json  →  02_chef_kitchen.json  →  03_artist_manifest.json  →  04_postman_delivery.json
+  </text>
+
+  <!-- ═══ LEGEND ═══ -->
+  <rect x="16" y="332" width="10" height="10" rx="2" fill="#16213e" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="32" y="341" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#64748b">MongoDB</text>
+  <rect x="100" y="332" width="10" height="10" rx="2" fill="#0d1f35" stroke="#e94560" stroke-width="1.5"/>
+  <text x="116" y="341" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#64748b">Exasol</text>
+  <rect x="170" y="332" width="10" height="10" rx="2" fill="#16213e" stroke="#475569" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="186" y="341" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#64748b">bridge / tool</text>
+  <line x1="266" y1="337" x2="286" y2="337" stroke="#e94560" stroke-width="1.5" marker-end="url(#arr-red)"/>
+  <text x="292" y="341" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#64748b">data flow</text>
+  <line x1="346" y1="337" x2="366" y2="337" stroke="#334155" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="372" y="341" font-family="system-ui,-apple-system,sans-serif" font-size="8" fill="#64748b">orchestration</text>
+</svg>
