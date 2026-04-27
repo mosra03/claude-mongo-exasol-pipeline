@@ -20,7 +20,8 @@
         "weekly_users": {"avg_comp": 99330, "count": 4207},
         "monthly_infrequent": {"avg_comp": 99057, "count": 3078},
         "plan_to_soon": {"avg_comp": 92877, "count": 1099}
-      }
+      },
+      "note": "Pre-aggregation estimate — Chef recipe contains final computed values"
     },
     {
       "id": 2,
@@ -42,7 +43,8 @@
           {"country": "Ukraine", "avg_comp": 105101, "count": 709},
           {"country": "Canada", "avg_comp": 100143, "count": 915}
         ]
-      }
+      },
+      "note": "Pre-aggregation estimate — Chef recipe contains final computed values"
     },
     {
       "id": 3,
@@ -57,7 +59,8 @@
         "hybrid_lean_flexible": {"avg_comp": 96362, "count": 3815},
         "your_choice": {"avg_comp": 95545, "count": 2753},
         "in_person": {"avg_comp": 69556, "count": 3199}
-      }
+      },
+      "note": "Pre-aggregation estimate — Chef recipe contains final computed values"
     },
     {
       "id": 4,
@@ -79,7 +82,8 @@
           {"model": "DeepSeek V-series (general)", "count": 2363},
           {"model": "X Grok models", "count": 1839}
         ]
-      }
+      },
+      "note": "Pre-aggregation estimate — Chef recipe contains final computed values"
     },
     {
       "id": 5,
@@ -98,7 +102,8 @@
           {"years_range": "30-49", "total": 5448, "threatened": 703, "threatened_pct": 12.9},
           {"years_range": "50+", "total": 80, "threatened": 6, "threatened_pct": 7.5}
         ]
-      }
+      },
+      "note": "Pre-aggregation estimate — Chef recipe contains final computed values"
     }
   ]
 }

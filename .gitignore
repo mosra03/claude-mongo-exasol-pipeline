@@ -58,3 +58,6 @@ assets/*.gif
 *.key
 credentials.json
 service_account.json
+
+# Claude Code local settings (session-specific permissions)
+.claude/settings.local.json

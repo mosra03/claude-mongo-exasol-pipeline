@@ -1,12 +1,14 @@
 # MCP Agentic Data Pipeline
 
-A 4-agent Claude Code pipeline that streams data from **MongoDB** into **Exasol** for in-memory analytics, renders interactive ECharts visualisations, and publishes a live web app — end to end, from a single prompt.
+A 4-agent Claude Code pipeline that explores a **MongoDB** collection, runs analytics (with optional **Exasol** SQL), renders interactive ECharts visualisations, and publishes a live web app — end to end, from a single prompt.
 
 ---
 
 ## What this is
 
-Point it at any MongoDB collection. Say **"Run full pipeline."** Four specialised agents — Scientist, Chef, Artist, Postman — discover patterns, migrate data into Exasol, run sub-second SQL analytics, render Apache ECharts charts, and publish a public URL via a cloudflared tunnel. No human steps between raw data and live app.
+Point it at any MongoDB collection. Say **"Run full pipeline."** Four specialised agents — Scientist, Chef, Artist, Postman — discover patterns, run aggregations, render Apache ECharts charts, and publish a public URL via a cloudflared tunnel. No human steps between raw data and live app.
+
+Built for developers who want to see what AI-native data engineering looks like in practice.
 
 > **Why Exasol:** Exasol is the analytics engine — its in-memory MPP architecture delivers sub-second query performance on the full dataset, even on a free-trial instance.
 
@@ -18,14 +20,14 @@ Demonstrated here on the [2025 Stack Overflow Developer Survey](https://survey.s
 
 ![Architecture](assets/architecture.svg)
 
-Data flows from MongoDB into Exasol via `exasol-json-tables`, and all analytics run on Exasol at in-memory speed. Each agent reads the previous recipe file, validates `status: "complete"`, does its work, and writes its own. Any failure stops the pipeline immediately and reports which agent broke and why.
+Chef runs MongoDB aggregations and writes structured JSON results. Artist reads that JSON and generates ECharts configs. Exasol MCP is available to Chef for optional SQL analytics if connected. Each agent reads the previous recipe file, validates `status: "complete"`, does its work, and writes its own. Any failure stops the pipeline immediately and reports which agent broke and why.
 
-| Agent | Database | What it does |
-|-------|----------|--------------|
+| Agent | Data source | What it does |
+|-------|-------------|--------------|
 | **Scientist** | MongoDB MCP | Explores schema, discovers 5 chart-worthy cross-dimensional patterns |
-| **Chef** | MongoDB → Exasol MCP | Runs MongoDB aggregations, migrates result sets into Exasol via exasol-json-tables, runs SQL analytics |
-| **Artist** | Exasol MCP | Queries Exasol for final numbers, generates complete Apache ECharts option configs |
-| **Postman** | — | Writes the web app, starts Python server, opens cloudflared public tunnel |
+| **Chef** | MongoDB MCP (+ Exasol MCP optional) | Runs aggregations, shapes data into ECharts-ready series, writes structured JSON |
+| **Artist** | Chef recipe (local JSON) | Reads structured data, generates complete Apache ECharts option configs |
+| **Postman** | Artist recipe (local JSON) | Writes the web app, starts Python server, opens cloudflared public tunnel |
 
 ---
 
@@ -56,7 +58,7 @@ curl https://downloads.exasol.com/exasol-personal/installer.sh | sh
 ```
 
 **Option C — Exasol Community Edition** *(free VM, up to 200 GB)*
-Download at [github.com/exasol-labs/exasol-labs-community-edition](https://github.com/exasol-labs/exasol-labs-community-edition)
+Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-labs-community-edition)
 
 ### MCP server config (`~/.claude/settings.json`)
 
@@ -97,6 +99,11 @@ Download at [github.com/exasol-labs/exasol-labs-community-edition](https://githu
 3. **Verify your MCP connections**
    ```
    /mcp
+   ```
+   Both servers must show as connected before running the pipeline:
+   ```
+   mongodb-mcp: npx ... — ✓ Connected
+   exasol-mcp:  uvx ... — ✓ Connected
    ```
 
 4. **Run the full pipeline with one prompt**

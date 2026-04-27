@@ -68,8 +68,8 @@ An agent must see `status: "complete"` in its input recipe before proceeding. Ag
 
 | Server | Purpose |
 |--------|---------|
-| `mongodb-mcp` | Read/write access to MongoDB Atlas — used by Scientist (schema inspection) and Chef (aggregations) |
-| `exasol-mcp` | Optional — available for SQL analytics if Chef needs columnar queries |
+| `mongodb-mcp` | Required — used by Scientist (schema inspection) and Chef (aggregations) |
+| `exasol-mcp` | Optional — used by Chef for SQL analytics if connected; not required for the default MongoDB-only path |
 
 ## Failure diagnosis
 

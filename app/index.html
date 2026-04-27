@@ -148,6 +148,7 @@
 </footer>
 
 <script>
+  // World map GeoJSON — unofficial Apache ECharts community mirror. If unavailable, choropleth falls back silently.
   const WORLD_MAP_CDN =
     'https://cdn.jsdelivr.net/gh/apache/echarts-website@asf-site/examples/data/asset/geo/world.json';
 
@@ -160,6 +161,8 @@
     ]);
 
     if (worldGeo) echarts.registerMap('world', worldGeo);
+
+    if (!Array.isArray(charts)) throw new Error(charts.error || 'Unexpected API response from server');
 
     document.getElementById('loading').style.display = 'none';
     buildUI(charts);
