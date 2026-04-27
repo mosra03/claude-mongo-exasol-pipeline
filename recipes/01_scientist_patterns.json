@@ -1,42 +1,104 @@
 {
   "agent_name": "Scientist",
   "status": "complete",
-  "timestamp": "2026-04-27T00:00:00Z",
-  "results": [
+  "timestamp": "2026-04-27T12:00:00Z",
+  "database": "stackoverflow",
+  "collection": "survey_2025",
+  "total_respondents": 49191,
+  "total_fields": 173,
+  "patterns": [
     {
       "id": 1,
-      "question": "How does AI tool adoption frequency vary across years of coding experience?",
-      "columns": ["YearsCode", "AISelect"],
-      "chart_type": "stacked_bar",
-      "rationale": "With 32% of respondents using AI daily, understanding whether adoption is driven by junior devs (embracing new tools) or veterans (productivity-seeking) shapes hiring and training strategy. The YearsCode × AISelect matrix spans 49,191 respondents and has clear categorical breakdowns."
+      "title": "AI Adoption vs Compensation — The Productivity Paradox",
+      "question": "Do developers who use AI tools daily earn more than those who avoid AI entirely?",
+      "columns": ["AISelect", "ConvertedCompYearly"],
+      "chart_type": "bar",
+      "rationale": "Counterintuitively, developers who refuse AI tools entirely have the highest average compensation ($110K) while daily AI users earn $101K. This 'paradox' likely reflects that high-earning senior/niche engineers are confident enough not to need AI assistance — a story that challenges the narrative that AI adoption equals productivity gain.",
+      "key_stats": {
+        "no_plan_to_use": {"avg_comp": 110294, "count": 3384},
+        "daily_users": {"avg_comp": 101432, "count": 11435},
+        "weekly_users": {"avg_comp": 99330, "count": 4207},
+        "monthly_infrequent": {"avg_comp": 99057, "count": 3078},
+        "plan_to_soon": {"avg_comp": 92877, "count": 1099}
+      }
     },
     {
       "id": 2,
-      "question": "What is the median annual developer compensation across the top 20 countries?",
+      "title": "Global Salary Landscape — A 2.5× Gap from US to Europe",
+      "question": "What is the average developer compensation across the top 15 countries by respondent count?",
       "columns": ["Country", "ConvertedCompYearly"],
       "chart_type": "choropleth",
-      "rationale": "Raw aggregations show a 4× salary gap between the US ($179K avg) and India ($44K), with Europe clustering in the $75K–$115K band. A choropleth makes this disparity immediately legible and supports geo-targeted hiring or compensation benchmarking narratives."
+      "rationale": "The US leads at $179K average — 2.5× higher than Germany ($86K) and nearly double the UK ($113K). Ukraine ($105K) outranks Canada ($100K) despite lower GDP per capita, indicating strong remote-work premium effects. A choropleth map exposes these geographic wage disparities at a glance.",
+      "key_stats": {
+        "top_countries": [
+          {"country": "United States", "avg_comp": 179805, "count": 5243},
+          {"country": "Switzerland", "avg_comp": 151290, "count": 418},
+          {"country": "Israel", "avg_comp": 131724, "count": 177},
+          {"country": "Ireland", "avg_comp": 121327, "count": 154},
+          {"country": "Australia", "avg_comp": 115941, "count": 569},
+          {"country": "Netherlands", "avg_comp": 115293, "count": 619},
+          {"country": "United Kingdom", "avg_comp": 112948, "count": 1486},
+          {"country": "Denmark", "avg_comp": 106030, "count": 230},
+          {"country": "Ukraine", "avg_comp": 105101, "count": 709},
+          {"country": "Canada", "avg_comp": 100143, "count": 915}
+        ]
+      }
     },
     {
       "id": 3,
-      "question": "Is there a correlation between a developer's sentiment toward AI and their job satisfaction score?",
-      "columns": ["AISent", "JobSat"],
-      "chart_type": "heatmap",
-      "rationale": "The cross-tabulation of 6 sentiment buckets × 11 satisfaction scores yields a 66-cell matrix. Initial data shows 'Very favorable' and 'Favorable' AI sentiment groups are skewed toward JobSat 7–9, but the effect is subtle — a heatmap exposes whether happier devs adopt AI because they are happy, or whether AI optimism itself lifts satisfaction."
+      "title": "Remote Work Premium — Full Remote Pays 67% More Than In-Person",
+      "question": "How does work arrangement (remote/hybrid/in-person) affect annual compensation and job satisfaction?",
+      "columns": ["RemoteWork", "ConvertedCompYearly", "JobSat"],
+      "chart_type": "grouped_bar",
+      "rationale": "Fully remote developers earn $116K on average versus $70K for in-person workers — a 67% premium. Job satisfaction scores (0–10) also skew higher for remote workers, with 'Remote' having the most 10/10 satisfaction scores (1,000 respondents). This dual signal on pay and happiness makes remote work the strongest positive factor in the dataset.",
+      "key_stats": {
+        "remote": {"avg_comp": 116275, "count": 7126},
+        "hybrid_lean_remote": {"avg_comp": 103127, "count": 4203},
+        "hybrid_lean_flexible": {"avg_comp": 96362, "count": 3815},
+        "your_choice": {"avg_comp": 95545, "count": 2753},
+        "in_person": {"avg_comp": 69556, "count": 3199}
+      }
     },
     {
       "id": 4,
-      "question": "How does annual compensation scale with years of coding experience, and at what point does it plateau?",
-      "columns": ["YearsCode", "ConvertedCompYearly"],
-      "chart_type": "line",
-      "rationale": "Aggregated averages show a steep ramp from $45K (1 yr) to $120K (10 yrs) that flattens through the 20–25 year range around $120K–$130K. Visualising this curve answers the timeless 'is more experience always worth more?' question and reveals diminishing returns in the mid-career window."
+      "title": "AI Model Market Share — GPT Leads but Claude Holds Strong #2",
+      "question": "Which AI models are developers actually using in 2025, and what is the adoption distribution?",
+      "columns": ["AIModelsHaveWorkedWith"],
+      "chart_type": "horizontal_bar",
+      "rationale": "OpenAI GPT chatbot models dominate with 13,424 users (27% of all respondents), followed by Anthropic Claude Sonnet (7,063) and Google Gemini Flash (5,823). DeepSeek's R-series reasoning models (3,848) already rival Meta Llama (2,941) despite launching in early 2025 — a striking sign of how quickly the market is moving.",
+      "key_stats": {
+        "model_usage": [
+          {"model": "OpenAI GPT (chatbot)", "count": 13424},
+          {"model": "Anthropic Claude Sonnet", "count": 7063},
+          {"model": "Gemini Flash (general purpose)", "count": 5823},
+          {"model": "OpenAI Reasoning models", "count": 5716},
+          {"model": "OpenAI Image generating", "count": 4395},
+          {"model": "Gemini Pro (reasoning)", "count": 4221},
+          {"model": "DeepSeek R-series (reasoning)", "count": 3848},
+          {"model": "Meta Llama (all models)", "count": 2941},
+          {"model": "DeepSeek V-series (general)", "count": 2363},
+          {"model": "X Grok models", "count": 1839}
+        ]
+      }
     },
     {
       "id": 5,
-      "question": "Which developer roles feel most threatened by AI replacing their jobs?",
-      "columns": ["DevType", "AIThreat"],
-      "chart_type": "grouped_bar",
-      "rationale": "AIThreat has three values (Yes / No / I'm not sure). Full-stack developers dominate the 'No' camp (6,490), while students show the highest uncertainty rate proportionally. A grouped or 100%-stacked bar by role surfaces which specialisations are most anxious about displacement — highly timely given the 2025 AI adoption wave."
+      "title": "AI Job Threat by Experience — Beginners Most Anxious, Veterans Most Confident",
+      "question": "Does perceived AI job threat decrease as years of coding experience increases?",
+      "columns": ["YearsCode", "AIThreat"],
+      "chart_type": "line",
+      "rationale": "Among developers with 0–4 years experience, 20% feel AI threatens their job. This drops monotonically to 13–15% in the 5–30 year range and falls to just 7.5% for those with 50+ years. The inverse correlation between experience and AI anxiety is clear and actionable — junior developers need the most reassurance and upskilling support.",
+      "key_stats": {
+        "experience_buckets": [
+          {"years_range": "0-4", "total": 3592, "threatened": 718, "threatened_pct": 20.0},
+          {"years_range": "5-9", "total": 7722, "threatened": 1152, "threatened_pct": 14.9},
+          {"years_range": "10-14", "total": 6815, "threatened": 996, "threatened_pct": 14.6},
+          {"years_range": "15-19", "total": 4902, "threatened": 655, "threatened_pct": 13.4},
+          {"years_range": "20-29", "total": 6730, "threatened": 933, "threatened_pct": 13.9},
+          {"years_range": "30-49", "total": 5448, "threatened": 703, "threatened_pct": 12.9},
+          {"years_range": "50+", "total": 80, "threatened": 6, "threatened_pct": 7.5}
+        ]
+      }
     }
   ]
 }

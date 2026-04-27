@@ -1,11 +1,11 @@
 {
   "agent_name": "Postman",
   "status": "complete",
-  "timestamp": "2026-04-27T00:00:00Z",
+  "timestamp": "2026-04-27T10:34:32Z",
   "source_recipe": "recipes/03_artist_manifest.json",
   "delivery": {
     "local_url": "http://localhost:8765",
-    "public_url": "https://row-simon-shield-genetics.trycloudflare.com",
+    "public_url": "https://passing-will-valuable-recommendation.trycloudflare.com",
     "port": 8765,
     "server_file": "app/server.py",
     "app_file": "app/index.html",
@@ -13,10 +13,10 @@
     "api_endpoint": "/api/data"
   },
   "charts": [
-    {"id": 1, "type": "stacked_bar",  "title": "AI Tool Adoption by Years of Experience"},
-    {"id": 2, "type": "choropleth",   "title": "Avg Developer Compensation by Country"},
-    {"id": 3, "type": "heatmap",      "title": "AI Sentiment vs Job Satisfaction"},
-    {"id": 4, "type": "line",         "title": "Compensation Curve vs Coding Experience"},
-    {"id": 5, "type": "grouped_bar",  "title": "AI Job-Threat Anxiety by Developer Role"}
+    {"id": 1, "type": "bar",            "title": "AI Adoption vs Compensation — The Productivity Paradox"},
+    {"id": 2, "type": "choropleth",     "title": "Global Salary Landscape — A 5× Gap from US to India"},
+    {"id": 3, "type": "grouped_bar",    "title": "Remote Work Premium — Full Remote Pays 58% More Than In-Person"},
+    {"id": 4, "type": "horizontal_bar", "title": "AI Model Market Share — GPT Leads but Claude Holds Strong #2"},
+    {"id": 5, "type": "line",           "title": "AI Job Threat by Experience — Beginners Most Anxious, Veterans Most Confident"}
   ]
 }

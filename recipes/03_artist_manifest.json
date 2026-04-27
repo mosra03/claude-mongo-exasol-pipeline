@@ -1,125 +1,120 @@
 {
   "agent_name": "Artist",
   "status": "complete",
-  "timestamp": "2026-04-27T00:00:00Z",
+  "timestamp": "2026-04-27T13:00:00Z",
   "source_recipe": "recipes/02_chef_kitchen.json",
   "theme": {
-    "background": "#1a1a2e",
-    "surface": "#16213e",
-    "accent": "#e94560",
-    "text_primary": "#e2e8f0",
+    "background": "#0f172a",
+    "surface": "#1e293b",
+    "accent": "#38bdf8",
+    "accent2": "#818cf8",
+    "accent3": "#34d399",
+    "danger": "#f87171",
+    "warn": "#fbbf24",
+    "text_primary": "#f1f5f9",
     "text_muted": "#94a3b8",
     "grid_line": "#1e293b",
-    "palette": ["#4ade80", "#60a5fa", "#fbbf24", "#f97316", "#e94560", "#a78bfa", "#34d399"]
+    "border": "#334155",
+    "palette": ["#38bdf8", "#818cf8", "#34d399", "#fbbf24", "#f87171", "#fb923c", "#a78bfa", "#4ade80"]
   },
   "charts": [
     {
       "id": 1,
-      "question": "How does AI tool adoption frequency vary across years of coding experience?",
-      "chart_type": "stacked_bar",
+      "pattern_id": 1,
+      "title": "AI Adoption vs Compensation — The Productivity Paradox",
+      "question": "Do developers who use AI tools daily earn more than those who avoid AI entirely?",
+      "chart_type": "bar",
+      "insight": "Developers who refuse AI earn 8% more ($97.7K) than daily AI users ($90.7K). The paradox likely reflects experienced senior engineers — confident in their niche — who don't need AI assistance.",
       "echarts_option": {
-        "backgroundColor": "#1a1a2e",
+        "backgroundColor": "#0f172a",
         "title": {
-          "text": "AI Tool Adoption by Years of Experience",
-          "subtext": "33,045 respondents · SO Survey 2025",
+          "text": "AI Adoption vs Compensation",
+          "subtext": "Avg annual comp by AI usage frequency · 23,185 respondents with comp data · SO Survey 2025",
           "left": "center",
           "top": "2%",
-          "textStyle": {"color": "#e2e8f0", "fontSize": 16, "fontWeight": "bold"},
-          "subtextStyle": {"color": "#94a3b8", "fontSize": 12}
+          "textStyle": { "color": "#f1f5f9", "fontSize": 18, "fontWeight": "bold" },
+          "subtextStyle": { "color": "#94a3b8", "fontSize": 12 }
         },
         "tooltip": {
           "trigger": "axis",
-          "axisPointer": {"type": "shadow"},
-          "backgroundColor": "#16213e",
+          "axisPointer": { "type": "shadow" },
+          "backgroundColor": "#1e293b",
           "borderColor": "#334155",
-          "textStyle": {"color": "#e2e8f0"}
+          "borderWidth": 1,
+          "textStyle": { "color": "#f1f5f9" },
+          "formatter": "function(params) { var p = params[0]; return p.name + '<br/>Avg Comp: <b>$' + p.value.toLocaleString() + '</b><br/>Respondents: ' + [3381,3075,4204,1099,11426][p.dataIndex].toLocaleString(); }"
         },
-        "legend": {
-          "top": "12%",
-          "textStyle": {"color": "#e2e8f0"},
-          "inactiveColor": "#475569"
-        },
-        "grid": {"left": "3%", "right": "4%", "bottom": "4%", "top": "22%", "containLabel": true},
+        "grid": { "left": "4%", "right": "6%", "bottom": "12%", "top": "20%", "containLabel": true },
         "xAxis": {
           "type": "category",
-          "data": ["0-2 yrs", "3-5 yrs", "6-9 yrs", "10-14 yrs", "15-19 yrs", "20-29 yrs", "30-50 yrs"],
-          "axisLabel": {"color": "#94a3b8", "fontSize": 11},
-          "axisLine": {"lineStyle": {"color": "#334155"}},
-          "axisTick": {"lineStyle": {"color": "#334155"}}
+          "data": ["No — won't use", "Monthly / Infrequent", "Weekly", "Plan to soon", "Daily"],
+          "axisLabel": { "color": "#94a3b8", "fontSize": 12, "interval": 0 },
+          "axisLine": { "lineStyle": { "color": "#334155" } },
+          "axisTick": { "lineStyle": { "color": "#334155" } }
         },
         "yAxis": {
           "type": "value",
-          "max": 100,
-          "name": "% of Respondents",
-          "nameTextStyle": {"color": "#94a3b8"},
-          "axisLabel": {"color": "#94a3b8", "formatter": "{value}%"},
-          "splitLine": {"lineStyle": {"color": "#1e293b"}}
+          "name": "Avg Annual Comp (USD)",
+          "nameTextStyle": { "color": "#94a3b8", "fontSize": 12 },
+          "axisLabel": {
+            "color": "#94a3b8",
+            "formatter": "${value}"
+          },
+          "splitLine": { "lineStyle": { "color": "#1e293b", "type": "dashed" } },
+          "min": 85000,
+          "max": 102000
         },
         "series": [
           {
-            "name": "Daily",
+            "name": "Avg Annual Comp (USD)",
             "type": "bar",
-            "stack": "total",
-            "data": [51.9, 55.3, 51.1, 48.4, 48.0, 44.6, 38.3],
-            "itemStyle": {"color": "#4ade80"},
-            "emphasis": {"focus": "series"}
-          },
-          {
-            "name": "Weekly",
-            "type": "bar",
-            "stack": "total",
-            "data": [15.3, 17.9, 19.5, 17.8, 18.1, 17.5, 16.6],
-            "itemStyle": {"color": "#60a5fa"},
-            "emphasis": {"focus": "series"}
-          },
-          {
-            "name": "Monthly / Infrequent",
-            "type": "bar",
-            "stack": "total",
-            "data": [13.9, 12.3, 12.9, 13.5, 13.6, 14.4, 14.9],
-            "itemStyle": {"color": "#fbbf24"},
-            "emphasis": {"focus": "series"}
-          },
-          {
-            "name": "Plan to soon",
-            "type": "bar",
-            "stack": "total",
-            "data": [10.6, 3.9, 3.0, 4.1, 4.6, 6.0, 8.2],
-            "itemStyle": {"color": "#f97316"},
-            "emphasis": {"focus": "series"}
-          },
-          {
-            "name": "No — won't",
-            "type": "bar",
-            "stack": "total",
-            "data": [8.4, 10.6, 13.5, 16.2, 15.7, 17.5, 22.0],
-            "itemStyle": {"color": "#e94560"},
-            "emphasis": {"focus": "series"}
+            "data": [
+              { "value": 97727, "itemStyle": { "color": "#34d399", "borderRadius": [6, 6, 0, 0] } },
+              { "value": 95592, "itemStyle": { "color": "#38bdf8", "borderRadius": [6, 6, 0, 0] } },
+              { "value": 95143, "itemStyle": { "color": "#818cf8", "borderRadius": [6, 6, 0, 0] } },
+              { "value": 92877, "itemStyle": { "color": "#fbbf24", "borderRadius": [6, 6, 0, 0] } },
+              { "value": 90690, "itemStyle": { "color": "#f87171", "borderRadius": [6, 6, 0, 0] } }
+            ],
+            "barMaxWidth": 60,
+            "label": {
+              "show": true,
+              "position": "top",
+              "formatter": "${c}",
+              "color": "#94a3b8",
+              "fontSize": 11
+            },
+            "emphasis": {
+              "itemStyle": { "shadowBlur": 12, "shadowColor": "rgba(56,189,248,0.35)" }
+            }
           }
         ]
       }
     },
     {
       "id": 2,
-      "question": "What is the median annual developer compensation across the top 20 countries?",
+      "pattern_id": 2,
+      "title": "Global Salary Landscape — A 5× Gap from US to India",
+      "question": "What is the average developer compensation across the top 20 countries by respondent count?",
       "chart_type": "choropleth",
-      "note": "Requires ECharts world map asset. Load via: import 'echarts/map/world' or register with echarts.registerMap('world', geojson).",
+      "note": "Requires ECharts world map asset. Register with echarts.registerMap('world', worldGeoJSON) before rendering.",
+      "insight": "5× salary gap: USA leads at $167K vs India's $33K. Switzerland second at $151K. The Anglosphere (USA, UK, Canada, Australia) all clear $100K.",
       "echarts_option": {
-        "backgroundColor": "#1a1a2e",
+        "backgroundColor": "#0f172a",
         "title": {
-          "text": "Avg Developer Compensation by Country",
-          "subtext": "Top 20 countries by respondent count · SO Survey 2025",
+          "text": "Global Developer Compensation",
+          "subtext": "Avg annual comp — top 20 countries by respondents · SO Survey 2025",
           "left": "center",
           "top": "2%",
-          "textStyle": {"color": "#e2e8f0", "fontSize": 16, "fontWeight": "bold"},
-          "subtextStyle": {"color": "#94a3b8", "fontSize": 12}
+          "textStyle": { "color": "#f1f5f9", "fontSize": 18, "fontWeight": "bold" },
+          "subtextStyle": { "color": "#94a3b8", "fontSize": 12 }
         },
         "tooltip": {
           "trigger": "item",
-          "backgroundColor": "#16213e",
+          "backgroundColor": "#1e293b",
           "borderColor": "#334155",
-          "textStyle": {"color": "#e2e8f0"},
-          "formatter": "{b}<br/>Avg Comp: ${c}"
+          "borderWidth": 1,
+          "textStyle": { "color": "#f1f5f9" },
+          "formatter": "{b}<br/>Avg Comp: <b>${c}</b>"
         },
         "visualMap": {
           "min": 33000,
@@ -128,10 +123,10 @@
           "calculable": true,
           "orient": "vertical",
           "left": "2%",
-          "bottom": "10%",
-          "textStyle": {"color": "#94a3b8"},
+          "bottom": "8%",
+          "textStyle": { "color": "#94a3b8" },
           "inRange": {
-            "color": ["#0f3460", "#533483", "#e94560"]
+            "color": ["#0f3460", "#1d4ed8", "#38bdf8", "#fbbf24", "#f87171"]
           }
         },
         "series": [
@@ -140,35 +135,35 @@
             "map": "world",
             "roam": true,
             "emphasis": {
-              "label": {"show": true, "color": "#e2e8f0"},
-              "itemStyle": {"areaColor": "#f97316"}
+              "label": { "show": true, "color": "#f1f5f9" },
+              "itemStyle": { "areaColor": "#fb923c" }
             },
             "itemStyle": {
-              "areaColor": "#16213e",
+              "areaColor": "#1e293b",
               "borderColor": "#334155",
               "borderWidth": 0.5
             },
             "data": [
-              {"name": "United States", "value": 167138},
-              {"name": "Germany", "value": 86444},
-              {"name": "United Kingdom", "value": 109855},
-              {"name": "India", "value": 33375},
-              {"name": "France", "value": 73779},
-              {"name": "Canada", "value": 100143},
-              {"name": "Ukraine", "value": 34099},
-              {"name": "Brazil", "value": 41785},
-              {"name": "Netherlands", "value": 92952},
-              {"name": "Poland", "value": 66716},
-              {"name": "Italy", "value": 55911},
-              {"name": "Australia", "value": 109278},
-              {"name": "Spain", "value": 70796},
-              {"name": "Sweden", "value": 73944},
-              {"name": "Switzerland", "value": 151290},
-              {"name": "Czech Republic", "value": 67004},
-              {"name": "Austria", "value": 79478},
-              {"name": "Denmark", "value": 106030},
-              {"name": "Belgium", "value": 84666},
-              {"name": "Portugal", "value": 74387}
+              { "name": "United States", "value": 167138 },
+              { "name": "Germany", "value": 86444 },
+              { "name": "United Kingdom", "value": 109855 },
+              { "name": "India", "value": 33375 },
+              { "name": "France", "value": 73779 },
+              { "name": "Canada", "value": 100143 },
+              { "name": "Ukraine", "value": 34099 },
+              { "name": "Brazil", "value": 41785 },
+              { "name": "Netherlands", "value": 92952 },
+              { "name": "Poland", "value": 66716 },
+              { "name": "Italy", "value": 55911 },
+              { "name": "Australia", "value": 109278 },
+              { "name": "Spain", "value": 70796 },
+              { "name": "Sweden", "value": 73944 },
+              { "name": "Switzerland", "value": 151290 },
+              { "name": "Czech Republic", "value": 67004 },
+              { "name": "Austria", "value": 79478 },
+              { "name": "Denmark", "value": 106030 },
+              { "name": "Belgium", "value": 84666 },
+              { "name": "Portugal", "value": 74387 }
             ]
           }
         ]
@@ -176,232 +171,289 @@
     },
     {
       "id": 3,
-      "question": "Is there a correlation between a developer's sentiment toward AI and their job satisfaction score?",
-      "chart_type": "heatmap",
+      "pattern_id": 3,
+      "title": "Remote Work Premium — Full Remote Pays 58% More Than In-Person",
+      "question": "How does work arrangement (remote/hybrid/in-person) affect annual compensation and job satisfaction?",
+      "chart_type": "grouped_bar",
+      "insight": "Fully remote developers earn 58% more than in-person ($108K vs $68K). 'Your choice' arrangements score highest on job satisfaction (7.43/10). The dual signal on pay and happiness makes remote/flexible work the strongest positive factor in the dataset.",
       "echarts_option": {
-        "backgroundColor": "#1a1a2e",
+        "backgroundColor": "#0f172a",
         "title": {
-          "text": "AI Sentiment vs Job Satisfaction",
-          "subtext": "Count of respondents per cell · SO Survey 2025",
+          "text": "Remote Work Premium",
+          "subtext": "Avg comp & job satisfaction by work arrangement · SO Survey 2025",
           "left": "center",
           "top": "2%",
-          "textStyle": {"color": "#e2e8f0", "fontSize": 16, "fontWeight": "bold"},
-          "subtextStyle": {"color": "#94a3b8", "fontSize": 12}
+          "textStyle": { "color": "#f1f5f9", "fontSize": 18, "fontWeight": "bold" },
+          "subtextStyle": { "color": "#94a3b8", "fontSize": 12 }
         },
         "tooltip": {
-          "position": "top",
-          "backgroundColor": "#16213e",
+          "trigger": "axis",
+          "axisPointer": { "type": "shadow" },
+          "backgroundColor": "#1e293b",
           "borderColor": "#334155",
-          "textStyle": {"color": "#e2e8f0"},
-          "formatter": "AI Sentiment: {b0}<br/>Job Sat: {a0}<br/>Count: {c0}"
+          "borderWidth": 1,
+          "textStyle": { "color": "#f1f5f9" }
         },
-        "grid": {"left": "12%", "right": "8%", "bottom": "18%", "top": "20%"},
+        "legend": {
+          "top": "13%",
+          "textStyle": { "color": "#f1f5f9", "fontSize": 12 },
+          "inactiveColor": "#475569"
+        },
+        "grid": { "left": "4%", "right": "6%", "bottom": "14%", "top": "24%", "containLabel": true },
         "xAxis": {
           "type": "category",
-          "data": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-          "name": "Job Satisfaction (0–10)",
-          "nameLocation": "middle",
-          "nameGap": 30,
-          "nameTextStyle": {"color": "#94a3b8"},
-          "axisLabel": {"color": "#94a3b8"},
-          "axisLine": {"lineStyle": {"color": "#334155"}},
-          "splitArea": {"show": true, "areaStyle": {"color": ["#16213e", "#1a1a2e"]}}
+          "data": ["Remote", "Hybrid (leans flexible)", "Your choice", "Hybrid (leans in-person)", "In-person"],
+          "axisLabel": { "color": "#94a3b8", "fontSize": 11, "interval": 0, "rotate": 15 },
+          "axisLine": { "lineStyle": { "color": "#334155" } },
+          "axisTick": { "lineStyle": { "color": "#334155" } }
         },
-        "yAxis": {
-          "type": "category",
-          "data": ["Very unfavorable", "Unfavorable", "Unsure", "Indifferent", "Favorable", "Very favorable"],
-          "name": "AI Sentiment",
-          "nameLocation": "middle",
-          "nameGap": 100,
-          "nameTextStyle": {"color": "#94a3b8"},
-          "axisLabel": {"color": "#94a3b8", "fontSize": 11},
-          "axisLine": {"lineStyle": {"color": "#334155"}},
-          "splitArea": {"show": true, "areaStyle": {"color": ["#16213e", "#1a1a2e"]}}
-        },
-        "visualMap": {
-          "min": 0,
-          "max": 2592,
-          "calculable": true,
-          "orient": "horizontal",
-          "left": "center",
-          "bottom": "2%",
-          "textStyle": {"color": "#94a3b8"},
-          "inRange": {"color": ["#0f172a", "#1e3a5f", "#e94560"]}
-        },
+        "yAxis": [
+          {
+            "type": "value",
+            "name": "Avg Annual Comp (USD)",
+            "nameTextStyle": { "color": "#38bdf8", "fontSize": 11 },
+            "axisLabel": { "color": "#94a3b8", "formatter": "${value}" },
+            "splitLine": { "lineStyle": { "color": "#1e293b", "type": "dashed" } }
+          },
+          {
+            "type": "value",
+            "name": "Avg Job Satisfaction (0–10)",
+            "nameTextStyle": { "color": "#34d399", "fontSize": 11 },
+            "axisLabel": { "color": "#94a3b8" },
+            "min": 6.5,
+            "max": 7.6,
+            "splitLine": { "show": false }
+          }
+        ],
         "series": [
           {
-            "type": "heatmap",
-            "data": [
-              [0,0,41],[1,0,26],[2,0,64],[3,0,106],[4,0,72],[5,0,155],[6,0,269],[7,0,454],[8,0,537],[9,0,262],[10,0,239],
-              [0,1,14],[1,1,25],[2,1,47],[3,1,95],[4,1,95],[5,1,190],[6,1,328],[7,1,577],[8,1,699],[9,1,345],[10,1,223],
-              [0,2,15],[1,2,3],[2,2,6],[3,2,16],[4,2,14],[5,2,42],[6,2,45],[7,2,91],[8,2,96],[9,2,50],[10,2,51],
-              [0,3,46],[1,3,24],[2,3,77],[3,3,126],[4,3,138],[5,3,353],[6,3,539],[7,3,884],[8,3,1131],[9,3,586],[10,3,407],
-              [0,4,41],[1,4,43],[2,4,135],[3,4,272],[4,4,246],[5,4,599],[6,4,1189],[7,4,2117],[8,4,2592],[9,4,1302],[10,4,798],
-              [0,5,55],[1,5,26],[2,5,70],[3,5,140],[4,5,173],[5,5,406],[6,5,621],[7,5,1070],[8,5,1474],[9,5,832],[10,5,956]
-            ],
-            "label": {"show": false},
-            "emphasis": {"itemStyle": {"shadowBlur": 10, "shadowColor": "rgba(233,69,96,0.4)"}}
+            "name": "Avg Annual Comp (USD)",
+            "type": "bar",
+            "yAxisIndex": 0,
+            "data": [108096, 92737, 91946, 91243, 68192],
+            "itemStyle": { "color": "#38bdf8", "borderRadius": [4, 4, 0, 0] },
+            "barMaxWidth": 48,
+            "emphasis": { "focus": "series" },
+            "label": {
+              "show": true,
+              "position": "top",
+              "formatter": "${c}",
+              "color": "#94a3b8",
+              "fontSize": 10
+            }
+          },
+          {
+            "name": "Avg Job Satisfaction (0–10)",
+            "type": "line",
+            "yAxisIndex": 1,
+            "data": [7.32, 7.21, 7.43, 7.08, 6.99],
+            "smooth": true,
+            "symbol": "circle",
+            "symbolSize": 9,
+            "lineStyle": { "color": "#34d399", "width": 3 },
+            "itemStyle": { "color": "#34d399", "borderColor": "#0f172a", "borderWidth": 2 },
+            "label": {
+              "show": true,
+              "formatter": "{c}",
+              "color": "#34d399",
+              "fontSize": 11,
+              "fontWeight": "bold"
+            }
           }
         ]
       }
     },
     {
       "id": 4,
-      "question": "How does annual compensation scale with years of coding experience, and at what point does it plateau?",
-      "chart_type": "line",
+      "pattern_id": 4,
+      "title": "AI Model Market Share — GPT Leads but Claude Holds Strong #2",
+      "question": "Which AI models are developers actually using in 2025, and what is the adoption distribution?",
+      "chart_type": "horizontal_bar",
+      "insight": "OpenAI GPT chatbot models dominate with 13,424 users (27% of all respondents). Anthropic Claude Sonnet is a clear #2 at 7,063 (14.4%). DeepSeek R-series (3,848) already rivals Meta Llama (2,941) despite launching in early 2025.",
       "echarts_option": {
-        "backgroundColor": "#1a1a2e",
+        "backgroundColor": "#0f172a",
         "title": {
-          "text": "Compensation Curve vs Coding Experience",
-          "subtext": "23,734 respondents with valid comp data · SO Survey 2025",
+          "text": "AI Model Market Share",
+          "subtext": "Respondents using each model (multi-select) · 27,581 respondents with field · SO Survey 2025",
           "left": "center",
           "top": "2%",
-          "textStyle": {"color": "#e2e8f0", "fontSize": 16, "fontWeight": "bold"},
-          "subtextStyle": {"color": "#94a3b8", "fontSize": 12}
+          "textStyle": { "color": "#f1f5f9", "fontSize": 18, "fontWeight": "bold" },
+          "subtextStyle": { "color": "#94a3b8", "fontSize": 12 }
         },
         "tooltip": {
           "trigger": "axis",
-          "backgroundColor": "#16213e",
+          "axisPointer": { "type": "shadow" },
+          "backgroundColor": "#1e293b",
           "borderColor": "#334155",
-          "textStyle": {"color": "#e2e8f0"},
-          "formatter": "{b}<br/>Avg Comp: ${c0}<br/>Respondents: {c1}"
+          "borderWidth": 1,
+          "textStyle": { "color": "#f1f5f9" },
+          "formatter": "{b}<br/>Respondents: <b>{c}</b>"
         },
-        "legend": {
-          "top": "12%",
-          "textStyle": {"color": "#e2e8f0"}
-        },
-        "grid": {"left": "4%", "right": "4%", "bottom": "4%", "top": "22%", "containLabel": true},
+        "grid": { "left": "2%", "right": "10%", "bottom": "4%", "top": "18%", "containLabel": true },
         "xAxis": {
-          "type": "category",
-          "data": ["0-2 yrs", "3-5 yrs", "6-9 yrs", "10-14 yrs", "15-19 yrs", "20-24 yrs", "25-34 yrs", "35-50 yrs"],
-          "name": "Years of Coding Experience",
-          "nameLocation": "middle",
-          "nameGap": 30,
-          "nameTextStyle": {"color": "#94a3b8"},
-          "axisLabel": {"color": "#94a3b8"},
-          "axisLine": {"lineStyle": {"color": "#334155"}},
-          "axisTick": {"lineStyle": {"color": "#334155"}}
+          "type": "value",
+          "name": "Respondents",
+          "nameTextStyle": { "color": "#94a3b8" },
+          "axisLabel": { "color": "#94a3b8" },
+          "splitLine": { "lineStyle": { "color": "#1e293b", "type": "dashed" } }
         },
-        "yAxis": [
-          {
-            "type": "value",
-            "name": "Avg Annual Comp (USD)",
-            "nameTextStyle": {"color": "#94a3b8"},
-            "axisLabel": {"color": "#94a3b8"},
-            "splitLine": {"lineStyle": {"color": "#1e293b"}}
-          },
-          {
-            "type": "value",
-            "name": "Respondents",
-            "nameTextStyle": {"color": "#475569"},
-            "axisLabel": {"color": "#475569"},
-            "splitLine": {"show": false}
-          }
-        ],
+        "yAxis": {
+          "type": "category",
+          "data": [
+            "Amazon Titan",
+            "Microsoft Phi-4",
+            "Alibaba Qwen",
+            "Perplexity Sonar",
+            "Mistral AI",
+            "X Grok",
+            "DeepSeek V- (general)",
+            "Meta Llama",
+            "DeepSeek R- (reasoning)",
+            "Gemini Pro (reasoning)",
+            "OpenAI Image Gen",
+            "OpenAI Reasoning",
+            "Gemini Flash (general)",
+            "Anthropic Claude Sonnet",
+            "OpenAI GPT (chatbot)"
+          ],
+          "axisLabel": { "color": "#94a3b8", "fontSize": 11 },
+          "axisLine": { "lineStyle": { "color": "#334155" } },
+          "axisTick": { "lineStyle": { "color": "#334155" } }
+        },
         "series": [
           {
-            "name": "Avg Annual Comp (USD)",
-            "type": "line",
-            "yAxisIndex": 0,
-            "data": [26533, 35191, 56988, 82878, 102136, 114203, 128343, 130874],
-            "smooth": true,
-            "symbol": "circle",
-            "symbolSize": 8,
-            "lineStyle": {"color": "#e94560", "width": 3},
-            "itemStyle": {"color": "#e94560", "borderColor": "#1a1a2e", "borderWidth": 2},
-            "areaStyle": {
-              "color": {
-                "type": "linear",
-                "x": 0, "y": 0, "x2": 0, "y2": 1,
-                "colorStops": [
-                  {"offset": 0, "color": "rgba(233,69,96,0.25)"},
-                  {"offset": 1, "color": "rgba(233,69,96,0.02)"}
-                ]
-              }
-            }
-          },
-          {
-            "name": "Respondents",
+            "name": "Respondents using model",
             "type": "bar",
-            "yAxisIndex": 1,
-            "data": [421, 1878, 3708, 4935, 3762, 2893, 3800, 2337],
-            "itemStyle": {"color": "rgba(96,165,250,0.18)", "borderColor": "rgba(96,165,250,0.4)", "borderWidth": 1},
-            "barMaxWidth": 40
+            "data": [
+              { "value": 283,   "itemStyle": { "color": "#475569", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 833,   "itemStyle": { "color": "#64748b", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 864,   "itemStyle": { "color": "#64748b", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 1250,  "itemStyle": { "color": "#818cf8", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 1712,  "itemStyle": { "color": "#818cf8", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 1839,  "itemStyle": { "color": "#a78bfa", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 2363,  "itemStyle": { "color": "#a78bfa", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 2941,  "itemStyle": { "color": "#60a5fa", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 3848,  "itemStyle": { "color": "#60a5fa", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 4221,  "itemStyle": { "color": "#34d399", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 4395,  "itemStyle": { "color": "#34d399", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 5716,  "itemStyle": { "color": "#fbbf24", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 5823,  "itemStyle": { "color": "#fbbf24", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 7063,  "itemStyle": { "color": "#fb923c", "borderRadius": [0, 4, 4, 0] } },
+              { "value": 13424, "itemStyle": { "color": "#38bdf8", "borderRadius": [0, 4, 4, 0] } }
+            ],
+            "barMaxWidth": 32,
+            "label": {
+              "show": true,
+              "position": "right",
+              "formatter": "{c}",
+              "color": "#94a3b8",
+              "fontSize": 11
+            },
+            "emphasis": {
+              "itemStyle": { "shadowBlur": 10, "shadowColor": "rgba(56,189,248,0.35)" }
+            }
           }
         ]
       }
     },
     {
       "id": 5,
-      "question": "Which developer roles feel most threatened by AI replacing their jobs?",
-      "chart_type": "grouped_bar",
+      "pattern_id": 5,
+      "title": "AI Job Threat by Experience — Beginners Most Anxious, Veterans Most Confident",
+      "question": "Does perceived AI job threat decrease as years of coding experience increases?",
+      "chart_type": "line",
+      "insight": "AI threat anxiety peaks at 20% among developers with 0-4 years experience and drops steadily to 12.9% at 30-49 years. The clear trend: more experience = less AI anxiety.",
       "echarts_option": {
-        "backgroundColor": "#1a1a2e",
+        "backgroundColor": "#0f172a",
         "title": {
-          "text": "AI Job-Threat Anxiety by Developer Role",
-          "subtext": "Top 10 roles by response volume · SO Survey 2025",
+          "text": "AI Job Threat by Coding Experience",
+          "subtext": "% respondents by AI threat sentiment across experience bands · 35,418 respondents · SO Survey 2025",
           "left": "center",
           "top": "2%",
-          "textStyle": {"color": "#e2e8f0", "fontSize": 16, "fontWeight": "bold"},
-          "subtextStyle": {"color": "#94a3b8", "fontSize": 12}
+          "textStyle": { "color": "#f1f5f9", "fontSize": 18, "fontWeight": "bold" },
+          "subtextStyle": { "color": "#94a3b8", "fontSize": 12 }
         },
         "tooltip": {
           "trigger": "axis",
-          "axisPointer": {"type": "shadow"},
-          "backgroundColor": "#16213e",
+          "backgroundColor": "#1e293b",
           "borderColor": "#334155",
-          "textStyle": {"color": "#e2e8f0"}
+          "borderWidth": 1,
+          "textStyle": { "color": "#f1f5f9" },
+          "formatter": "function(params) { var s = params[0].axisValueLabel + '<br/>'; params.forEach(function(p) { s += p.marker + p.seriesName + ': <b>' + p.value + '%</b><br/>'; }); return s; }"
         },
         "legend": {
-          "top": "12%",
-          "textStyle": {"color": "#e2e8f0"},
+          "top": "13%",
+          "textStyle": { "color": "#f1f5f9", "fontSize": 12 },
           "inactiveColor": "#475569"
         },
-        "grid": {"left": "3%", "right": "4%", "bottom": "18%", "top": "22%", "containLabel": true},
+        "grid": { "left": "4%", "right": "4%", "bottom": "8%", "top": "24%", "containLabel": true },
         "xAxis": {
           "type": "category",
-          "data": [
-            "Full-stack Dev", "Back-end Dev", "Student",
-            "Front-end Dev", "Desktop Dev", "Architect",
-            "Mobile Dev", "AI/ML Engineer", "Data Engineer", "Data Scientist"
-          ],
-          "axisLabel": {
-            "color": "#94a3b8",
-            "rotate": 30,
-            "fontSize": 11,
-            "interval": 0
-          },
-          "axisLine": {"lineStyle": {"color": "#334155"}},
-          "axisTick": {"lineStyle": {"color": "#334155"}}
+          "data": ["0-4 yrs", "5-9 yrs", "10-14 yrs", "15-19 yrs", "20-29 yrs", "30-49 yrs", "50+ yrs"],
+          "axisLabel": { "color": "#94a3b8", "fontSize": 12 },
+          "axisLine": { "lineStyle": { "color": "#334155" } },
+          "axisTick": { "lineStyle": { "color": "#334155" } }
         },
         "yAxis": {
           "type": "value",
-          "name": "Respondents",
-          "nameTextStyle": {"color": "#94a3b8"},
-          "axisLabel": {"color": "#94a3b8"},
-          "splitLine": {"lineStyle": {"color": "#1e293b"}}
+          "name": "% of Respondents",
+          "nameTextStyle": { "color": "#94a3b8" },
+          "axisLabel": { "color": "#94a3b8", "formatter": "{value}%" },
+          "splitLine": { "lineStyle": { "color": "#1e293b", "type": "dashed" } },
+          "min": 0,
+          "max": 80
         },
         "series": [
           {
-            "name": "Yes — threatened",
-            "type": "bar",
-            "data": [1508, 822, 414, 312, 197, 327, 238, 108, 98, 68],
-            "itemStyle": {"color": "#e94560"},
-            "emphasis": {"focus": "series"}
+            "name": "% Feel AI Threatens Their Job",
+            "type": "line",
+            "data": [20.0, 14.9, 14.6, 13.4, 13.9, 12.9, 18.2],
+            "smooth": true,
+            "symbol": "circle",
+            "symbolSize": 8,
+            "lineStyle": { "color": "#f87171", "width": 3 },
+            "itemStyle": { "color": "#f87171", "borderColor": "#0f172a", "borderWidth": 2 },
+            "areaStyle": {
+              "color": {
+                "type": "linear", "x": 0, "y": 0, "x2": 0, "y2": 1,
+                "colorStops": [
+                  { "offset": 0, "color": "rgba(248,113,113,0.25)" },
+                  { "offset": 1, "color": "rgba(248,113,113,0.03)" }
+                ]
+              }
+            },
+            "emphasis": { "focus": "series" }
           },
           {
-            "name": "No — not threatened",
-            "type": "bar",
-            "data": [6490, 3255, 1399, 877, 1101, 1569, 630, 352, 406, 333],
-            "itemStyle": {"color": "#4ade80"},
-            "emphasis": {"focus": "series"}
+            "name": "% Do Not Feel Threatened",
+            "type": "line",
+            "data": [54.0, 62.4, 65.3, 66.3, 65.4, 68.1, 67.5],
+            "smooth": true,
+            "symbol": "circle",
+            "symbolSize": 8,
+            "lineStyle": { "color": "#34d399", "width": 3 },
+            "itemStyle": { "color": "#34d399", "borderColor": "#0f172a", "borderWidth": 2 },
+            "areaStyle": {
+              "color": {
+                "type": "linear", "x": 0, "y": 0, "x2": 0, "y2": 1,
+                "colorStops": [
+                  { "offset": 0, "color": "rgba(52,211,153,0.20)" },
+                  { "offset": 1, "color": "rgba(52,211,153,0.02)" }
+                ]
+              }
+            },
+            "emphasis": { "focus": "series" }
           },
           {
-            "name": "Not sure",
-            "type": "bar",
-            "data": [2211, 1247, 707, 429, 319, 408, 280, 94, 148, 91],
-            "itemStyle": {"color": "#fbbf24"},
-            "emphasis": {"focus": "series"}
+            "name": "% Not Sure",
+            "type": "line",
+            "data": [26.0, 22.7, 20.1, 20.3, 20.8, 19.0, 14.4],
+            "smooth": true,
+            "symbol": "circle",
+            "symbolSize": 8,
+            "lineStyle": { "color": "#fbbf24", "width": 2, "type": "dashed" },
+            "itemStyle": { "color": "#fbbf24", "borderColor": "#0f172a", "borderWidth": 2 },
+            "emphasis": { "focus": "series" }
           }
         ]
       }

@@ -1,103 +1,57 @@
 # MCP Agentic Data Pipeline
 
-A 5-agent AI pipeline that analyses the **2025 Stack Overflow Developer Survey** — 49,191 developers across 177 countries — and publishes a live, interactive analytics app. Every step from raw data loading through insight generation to a public URL is coordinated by Claude Code acting as Orchestrator, with MongoDB Atlas and Exasol SaaS as the data backbone.
+A 4-agent Claude Code pipeline that explores any MongoDB dataset, generates insights, renders interactive charts, and publishes a live web app — end to end, from a single prompt.
 
 ---
 
-## What this pipeline does
+## What this is
+
+Point it at any MongoDB collection. Say **"Run full pipeline."** Four specialised agents — Scientist, Chef, Artist, Postman — discover patterns, aggregate data, render Apache ECharts visualisations, and publish a public URL via a cloudflared tunnel. No human steps between raw data and live app.
+
+Demonstrated here on the [2025 Stack Overflow Developer Survey](https://survey.stackoverflow.co/2025) — 49,191 developers across 177 countries.
+
+---
+
+## How it works
 
 ```
-Raw survey CSV
-      │
-      ▼
-[Agent 1 · Scientist]  ──── designs 10 analytical questions
-      │
-      ▼
-[Agent 2 · Loader]  ──────── imports CSV → MongoDB Atlas (M0)
-      │
-      ▼
-[Agent 3 · Analyst]  ─────── queries Mongo, pushes to Exasol, runs SQL analytics
-      │
-      ▼
-[Agent 4 · Visualiser]  ──── generates Apache ECharts JSON config per question
-      │
-      ▼
-[Agent 5 · Publisher]  ───── writes server.py + index.html, opens cloudflared tunnel
-      │
-      ▼
-  Public URL (no login required)
+Your MongoDB Collection
+        │
+        ▼
+[Agent 1 · Scientist]  ── explore schema, find 5 chart-worthy patterns
+        │  recipes/01_scientist_patterns.json
+        ▼
+[Agent 2 · Chef]       ── run aggregations, shape ECharts-ready data series
+        │  recipes/02_chef_kitchen.json
+        ▼
+[Agent 3 · Artist]     ── generate complete ECharts option configs
+        │  recipes/03_artist_manifest.json
+        ▼
+[Agent 4 · Postman]    ── write web app, start server, open public tunnel
+        │  recipes/04_postman_delivery.json
+        ▼
+  Public URL  (trycloudflare.com — no login, no port-forwarding)
 ```
 
-The Orchestrator (Claude Code) drives all five agents sequentially, passing results forward as structured context. No human intervention is required between steps.
+Each agent reads the previous recipe, validates `status: "complete"`, does its work, and writes its own. Any failure stops the pipeline immediately and reports which agent broke and why.
 
 ---
 
-## The 5 Agents
+## Run it yourself
 
-| # | Agent | Role | Key tools |
-|---|-------|------|-----------|
-| 1 | **Scientist** | Reads the survey schema and proposes 10 data questions worth answering | MongoDB MCP |
-| 2 | **Loader** | Streams the CSV into a MongoDB Atlas M0 collection, validates row count | MongoDB MCP |
-| 3 | **Analyst** | Runs aggregation pipelines in Mongo, migrates result sets to Exasol, executes SQL analytics | MongoDB MCP · Exasol MCP · exapump |
-| 4 | **Visualiser** | Converts each analytic result into an Apache ECharts option object | Exasol MCP |
-| 5 | **Publisher** | Writes the web app, starts a Python HTTP server, opens a cloudflared Quick Tunnel | Bash |
+Works with **any** MongoDB collection — swap the Stack Overflow survey for your own data in step 1.
 
----
-
-## Tech stack
-
-| Component | Purpose |
-|-----------|---------|
-| **Claude Code** | Orchestration — drives agents, passes context, enforces sequencing |
-| **MongoDB Atlas M0** | Source database — stores raw survey responses as BSON documents |
-| **MongoDB MCP Server** | Gives Claude Code read/write access to Atlas without leaving the terminal |
-| **Exasol SaaS** | Analytics engine — columnar SQL for fast aggregations over 49 k rows |
-| **Exasol MCP Server** | Lets Claude Code query Exasol, inspect schemas, and stream results |
-| **exasol-json-tables** | Converts JSON result sets from Mongo into Exasol-importable tables |
-| **exapump** | CLI for bulk data transfer between local files and Exasol / BucketFS |
-| **Apache ECharts** | Client-side charting library (bar, line, scatter, map, heatmap …) |
-| **cloudflared Quick Tunnel** | Instant public HTTPS URL for the local Python server — no account needed |
-| **Dataset** | [2025 Stack Overflow Developer Survey](https://survey.stackoverflow.co/) — 49,191 developers, 177 countries |
-
----
-
-## Folder structure
-
-```
-mcp-agentic-data-pipeline/
-├── agents/
-│   ├── orchestrator.md          # Orchestrator prompt (this pipeline)
-│   ├── agent1_scientist.md      # Scientist agent prompt
-│   ├── agent2_loader.md         # Loader agent prompt
-│   ├── agent3_analyst.md        # Analyst agent prompt
-│   ├── agent4_visualiser.md     # Visualiser agent prompt
-│   └── agent5_publisher.md      # Publisher agent prompt
-├── app/
-│   ├── server.py                # Python HTTP server (serves index.html + /api/data)
-│   └── index.html               # Single-page analytics app (Apache ECharts)
-├── data/
-│   └── survey_results.csv       # 2025 Stack Overflow Developer Survey (add locally)
-├── assets/
-│   └── demo.gif                 # Pipeline demo recording
-└── README.md
-```
-
----
-
-## Prerequisites
+### Prerequisites
 
 | Tool | Install |
 |------|---------|
 | Python 3.10+ | `brew install python` or [python.org](https://python.org) |
-| Claude Code CLI | `npm install -g @anthropic-ai/claude-code` |
-| MongoDB Atlas account | Free M0 cluster at [cloud.mongodb.com](https://cloud.mongodb.com) |
-| MongoDB MCP Server | Configured in `~/.claude/settings.json` (see below) |
-| Exasol SaaS account | Free trial at [cloud.exasol.com](https://cloud.exasol.com) |
-| Exasol MCP Server | Configured in `~/.claude/settings.json` (see below) |
-| exapump | `pip install exapump` |
+| Claude Code | `npm install -g @anthropic-ai/claude-code` |
+| MongoDB Atlas | Free M0 at [cloud.mongodb.com](https://cloud.mongodb.com) |
+| MongoDB MCP Server | See config below |
 | cloudflared | `brew install cloudflare/cloudflare/cloudflared` |
 
-### MCP server configuration (`~/.claude/settings.json`)
+### MCP server config (`~/.claude/settings.json`)
 
 ```json
 {
@@ -108,88 +62,59 @@ mcp-agentic-data-pipeline/
       "env": {
         "MDB_MCP_CONNECTION_STRING": "mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/"
       }
-    },
-    "exasol-mcp": {
-      "command": "uvx",
-      "args": ["exasol-mcp"],
-      "env": {
-        "EXASOL_HOST": "<your-exasol-host>",
-        "EXASOL_USER": "<your-user>",
-        "EXASOL_PASSWORD": "<your-password>"
-      }
     }
   }
 }
 ```
 
----
+### Steps
 
-## Running the pipeline with your own data
+1. **Load your data into MongoDB Atlas** — any collection, any schema. For the Stack Overflow example: download the 2025 survey CSV from [survey.stackoverflow.co/2025](https://survey.stackoverflow.co/2025), import it into `stackoverflow.survey_2025`.
 
-1. **Download the dataset**
-   Go to [https://survey.stackoverflow.co/](https://survey.stackoverflow.co/), download the 2025 survey ZIP, and place `survey_results.csv` in the `data/` folder.
-
-2. **Clone this repo and open in Claude Code**
+2. **Clone and open in Claude Code**
    ```bash
-   git clone https://github.com/<you>/mcp-agentic-data-pipeline.git
+   git clone https://github.com/ranjanm/mcp-agentic-data-pipeline.git
    cd mcp-agentic-data-pipeline
    claude
    ```
 
-3. **Configure your MCP servers** as shown above, then verify connectivity:
+3. **Verify your MCP connection**
    ```
    /mcp
    ```
 
-4. **Start the Orchestrator**
-   Paste the contents of `agents/orchestrator.md` into the Claude Code prompt and press Enter. The pipeline runs automatically from Agent 1 through Agent 5.
+4. **Run the full pipeline with one prompt**
+   ```
+   Run full pipeline
+   ```
+   Or run agents individually to debug or re-run a single stage:
+   ```
+   Run agent 1 - Scientist
+   Run agent 2 - Chef
+   Run agent 3 - Artist
+   Run agent 4 - Postman
+   ```
 
-5. **Open your public URL**
-   At the end of Agent 5 the terminal prints a `trycloudflare.com` URL. Open it in any browser — no login, no port-forwarding required.
+5. **Open your live URL** — printed at the end of Agent 4. Works in any browser.
 
----
-
-## Sample questions the pipeline answers
-
-1. What percentage of developers use AI tools in their daily workflow?
-2. Which programming languages have the highest median salary?
-3. How does years of experience correlate with total compensation?
-4. What is the geographic distribution of professional developers?
-5. Which databases are most popular among different developer roles?
-6. How do remote, hybrid, and in-office developers compare on job satisfaction?
-7. What is the most common path into software development (education vs. self-taught)?
-8. Which cloud platforms dominate among developers who work with AI/ML?
-9. How does company size affect technology stack choices?
-10. What tools do the highest-paid 10% of developers have in common?
+> The `data-pipeline-analyst` skill in `skills/` auto-loads in Claude Code, giving every agent full pipeline context without re-reading the repo each time.
 
 ---
 
-## Architecture diagram
+## Dataset used
 
-```
-                    ┌─────────────────────────────────┐
-                    │        Claude Code CLI           │
-                    │     (Orchestrator agent)         │
-                    └────────────┬────────────────────┘
-                                 │ coordinates
-          ┌──────────────────────┼──────────────────────┐
-          │                      │                       │
-          ▼                      ▼                       ▼
-   MongoDB MCP              Exasol MCP               Bash
-   ──────────              ──────────              ──────────
-   Atlas M0                Exasol SaaS             cloudflared
-   (raw docs)          (analytics SQL)          (public tunnel)
-          │                      │
-          └──────────┬───────────┘
-                     │
-              exapump / JSON tables
-              (ETL bridge)
-                     │
-                     ▼
-             Apache ECharts
-             (interactive charts
-              in index.html)
-```
+[2025 Stack Overflow Developer Survey](https://survey.stackoverflow.co/2025) — 49,191 developers, 177 countries, 173 fields. Covers compensation, AI tool adoption, remote work arrangements, job satisfaction, programming languages, and more.
+
+---
+
+## Built with Exasol Labs
+
+| Tool | How it's used |
+|------|---------------|
+| [exasol-json-tables](https://github.com/exasol-labs/exasol-json-tables) | Ingests JSON result sets from MongoDB into native Exasol tables for SQL analytics |
+| [exasol-agent-skills](https://github.com/exasol-labs/exasol-agent-skills) | Claude Code plugin that gives Claude Exasol SQL expertise for analytics queries |
+| [exapump](https://github.com/exasol-labs/exapump) | Fast CLI for bulk data import/export between local files and Exasol |
+| [Exasol MCP Server](https://github.com/exasol/mcp-server) | MCP server connecting Claude Code directly to Exasol for SQL queries and schema inspection |
 
 ---
 
@@ -197,25 +122,32 @@ mcp-agentic-data-pipeline/
 
 <table>
   <tr>
-    <td><img src="assets/chart1_ai_adoption.png" alt="AI Adoption" width="100%"></td>
-    <td><img src="assets/chart2_comp_country.png" alt="Compensation by Country" width="100%"></td>
+    <td><img src="assets/chart1_ai_adoption_compensation.png" width="100%" alt="AI Adoption vs Compensation"/><br/><sub>AI Adoption vs Compensation — The Productivity Paradox</sub></td>
+    <td><img src="assets/chart2_global_salary_landscape.png" width="100%" alt="Global Salary Landscape"/><br/><sub>Global Salary Landscape — A 5× Gap from US to India</sub></td>
   </tr>
   <tr>
-    <td><img src="assets/chart3_ai_sentiment.png" alt="AI Sentiment" width="100%"></td>
-    <td><img src="assets/chart4_comp_curve.png" alt="Compensation Curve" width="100%"></td>
+    <td><img src="assets/chart3_remote_work_premium.png" width="100%" alt="Remote Work Premium"/><br/><sub>Remote Work Premium — Full Remote Pays 58% More</sub></td>
+    <td><img src="assets/chart4_ai_model_market_share.png" width="100%" alt="AI Model Market Share"/><br/><sub>AI Model Market Share — GPT Leads, Claude #2</sub></td>
   </tr>
   <tr>
-    <td><img src="assets/chart5_ai_threat.png" alt="AI Threat Perception" width="100%"></td>
+    <td><img src="assets/chart5_ai_threat_by_experience.png" width="100%" alt="AI Job Threat by Experience"/><br/><sub>AI Job Threat by Experience — Beginners Most Anxious</sub></td>
     <td></td>
   </tr>
 </table>
 
 ---
 
-## License
+## Tech stack
 
-MIT — use freely, attribution appreciated.
+| Component | Role |
+|-----------|------|
+| **Claude Code** | Orchestrator — drives agents, validates recipes, enforces sequencing |
+| **MongoDB Atlas M0** | Source database — stores survey data as BSON documents |
+| **MongoDB MCP Server** | Gives Claude Code direct read/write access to Atlas |
+| **Apache ECharts** | Client-side charting — bar, choropleth, line, grouped bar |
+| **Python http.server** | Minimal web server — serves `index.html` and `/api/data` |
+| **cloudflared Quick Tunnel** | Instant public HTTPS URL — no account or port-forwarding needed |
 
 ---
 
-*Built with Claude Code · MongoDB Atlas · Exasol SaaS · Apache ECharts · cloudflared*
+*Built by ranjanm · contributions welcome*

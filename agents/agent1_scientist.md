@@ -1,31 +1,41 @@
 # Agent 1 · Scientist
 
-## Role
-Explore the survey dataset schema and propose 10 well-formed analytical questions that can be answered with the available columns.
+**Job:** Explore the MongoDB collection, discover 5 chart-worthy patterns, write the first recipe.
 
-## Inputs
-- MongoDB collection: `stackoverflow_survey` (or the CSV schema in `data/survey_results.csv`)
+## Data source
+- MongoDB: `stackoverflow.survey_2025` (49,191 docs, 173 fields)
 
-## Tasks
-1. Use the MongoDB MCP server to inspect the collection schema (or read the CSV header row).
-2. Identify the most analytically rich columns (compensation, geography, tools, experience, satisfaction, etc.).
-3. Propose exactly 10 questions. For each question state:
-   - The question in plain English
-   - The relevant columns
-   - The expected chart type (bar, line, scatter, choropleth, heatmap, …)
-   - Why it is interesting
+## Steps
+1. Use the MongoDB MCP server to inspect the collection schema and sample documents.
+2. Identify the most analytically compelling columns: compensation, AI adoption, geography, experience, job satisfaction, tool usage.
+3. Select exactly 5 patterns — prioritise cross-dimensional questions over simple frequency counts.
+4. For each pattern define: title, question, relevant columns, best chart type, and rationale with key stats.
 
-## Output format (JSON)
+## What makes a good pattern
+- **Cross-dimensional:** compensation × AI adoption beats a simple language frequency count.
+- **Surprising:** answers that challenge the obvious assumption make for sharper insights.
+- **Actionable:** insights a developer or hiring manager can act on.
+- **Visualisable:** data that maps cleanly to one ECharts chart type without over-engineering.
+
+## Output: `recipes/01_scientist_patterns.json`
 ```json
-[
-  {
-    "id": 1,
-    "question": "...",
-    "columns": ["col_a", "col_b"],
-    "chart_type": "bar",
-    "rationale": "..."
-  }
-]
+{
+  "agent_name": "Scientist",
+  "status": "complete",
+  "timestamp": "<ISO-8601>",
+  "database": "stackoverflow",
+  "collection": "survey_2025",
+  "total_respondents": 49191,
+  "patterns": [
+    {
+      "id": 1,
+      "title": "<descriptive title>",
+      "question": "<plain-English question>",
+      "columns": ["ColA", "ColB"],
+      "chart_type": "bar",
+      "rationale": "<why this is interesting>",
+      "key_stats": {}
+    }
+  ]
+}
 ```
-
-Pass this JSON array to the Analyst agent unchanged.

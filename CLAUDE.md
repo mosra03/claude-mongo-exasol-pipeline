@@ -46,9 +46,10 @@ An agent must see `status: "complete"` in its input recipe before proceeding (Ag
 ## Project structure
 
 ```
-agents/          agent spec markdown files
+agents/          agent spec markdown files (orchestrator + 4 agents)
+skills/          Claude Code skill — auto-loads pipeline context
 recipes/         structured JSON handoff files between agents
-app/             web app output (written by Postman)
-assets/          static assets
-data/            raw survey data
+app/             web app (server.py + index.html)
+assets/          screenshot PNGs
+data/            raw survey data (gitignored — add locally)
 ```

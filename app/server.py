@@ -9,19 +9,21 @@ RECIPES_DIR = os.path.join(BASE_DIR, '..', 'recipes')
 
 
 def load_charts():
-    with open(os.path.join(RECIPES_DIR, '03_artist_manifest.json')) as f:
-        artist = json.load(f)
-    with open(os.path.join(RECIPES_DIR, '02_chef_kitchen.json')) as f:
-        chef = json.load(f)
-
-    insights = {c['id']: c['echarts_data'].get('insight', '') for c in chef['charts']}
+    manifest_path = os.path.join(RECIPES_DIR, '03_artist_manifest.json')
+    try:
+        with open(manifest_path) as f:
+            artist = json.load(f)
+    except FileNotFoundError:
+        raise RuntimeError(f'Artist manifest not found at {manifest_path} — run Agent 3 first.')
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f'Invalid JSON in artist manifest: {e}')
 
     return [
         {
             'id': c['id'],
             'question': c['question'],
             'chart_type': c['chart_type'],
-            'insight': insights.get(c['id'], ''),
+            'insight': c.get('insight', ''),
             'echarts_option': c['echarts_option'],
         }
         for c in artist['charts']
@@ -31,22 +33,34 @@ def load_charts():
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/api/data':
-            body = json.dumps(load_charts()).encode()
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Content-Length', str(len(body)))
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(body)
+            try:
+                body = json.dumps(load_charts()).encode()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(body)))
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(body)
+            except Exception as e:
+                body = json.dumps({'error': str(e)}).encode()
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
         elif self.path in ('/', '/index.html'):
             path = os.path.join(BASE_DIR, 'index.html')
-            with open(path, 'rb') as f:
-                body = f.read()
-            self.send_response(200)
-            self.send_header('Content-Type', 'text/html; charset=utf-8')
-            self.send_header('Content-Length', str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
+            try:
+                with open(path, 'rb') as f:
+                    body = f.read()
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            except FileNotFoundError:
+                self.send_response(404)
+                self.end_headers()
         else:
             self.send_response(404)
             self.end_headers()
