@@ -1,6 +1,42 @@
 {
   "agent_name": "Scientist",
-  "status": "pending",
-  "timestamp": null,
-  "results": null
+  "status": "complete",
+  "timestamp": "2026-04-27T00:00:00Z",
+  "results": [
+    {
+      "id": 1,
+      "question": "How does AI tool adoption frequency vary across years of coding experience?",
+      "columns": ["YearsCode", "AISelect"],
+      "chart_type": "stacked_bar",
+      "rationale": "With 32% of respondents using AI daily, understanding whether adoption is driven by junior devs (embracing new tools) or veterans (productivity-seeking) shapes hiring and training strategy. The YearsCode × AISelect matrix spans 49,191 respondents and has clear categorical breakdowns."
+    },
+    {
+      "id": 2,
+      "question": "What is the median annual developer compensation across the top 20 countries?",
+      "columns": ["Country", "ConvertedCompYearly"],
+      "chart_type": "choropleth",
+      "rationale": "Raw aggregations show a 4× salary gap between the US ($179K avg) and India ($44K), with Europe clustering in the $75K–$115K band. A choropleth makes this disparity immediately legible and supports geo-targeted hiring or compensation benchmarking narratives."
+    },
+    {
+      "id": 3,
+      "question": "Is there a correlation between a developer's sentiment toward AI and their job satisfaction score?",
+      "columns": ["AISent", "JobSat"],
+      "chart_type": "heatmap",
+      "rationale": "The cross-tabulation of 6 sentiment buckets × 11 satisfaction scores yields a 66-cell matrix. Initial data shows 'Very favorable' and 'Favorable' AI sentiment groups are skewed toward JobSat 7–9, but the effect is subtle — a heatmap exposes whether happier devs adopt AI because they are happy, or whether AI optimism itself lifts satisfaction."
+    },
+    {
+      "id": 4,
+      "question": "How does annual compensation scale with years of coding experience, and at what point does it plateau?",
+      "columns": ["YearsCode", "ConvertedCompYearly"],
+      "chart_type": "line",
+      "rationale": "Aggregated averages show a steep ramp from $45K (1 yr) to $120K (10 yrs) that flattens through the 20–25 year range around $120K–$130K. Visualising this curve answers the timeless 'is more experience always worth more?' question and reveals diminishing returns in the mid-career window."
+    },
+    {
+      "id": 5,
+      "question": "Which developer roles feel most threatened by AI replacing their jobs?",
+      "columns": ["DevType", "AIThreat"],
+      "chart_type": "grouped_bar",
+      "rationale": "AIThreat has three values (Yes / No / I'm not sure). Full-stack developers dominate the 'No' camp (6,490), while students show the highest uncertainty rate proportionally. A grouped or 100%-stacked bar by role surfaces which specialisations are most anxious about displacement — highly timely given the 2025 AI adoption wave."
+    }
+  ]
 }
