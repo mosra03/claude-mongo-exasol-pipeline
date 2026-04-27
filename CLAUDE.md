@@ -14,6 +14,17 @@ Run agent 4 - Postman      → build web app, start server, open tunnel, write r
 Run full pipeline          → run all four agents in sequence (1 → 2 → 3 → 4)
 ```
 
+## Full pipeline — execution rules
+
+When "Run full pipeline" is triggered:
+
+1. Run Agent 1 (Scientist). After it finishes, read `recipes/01_scientist_patterns.json` and confirm `status === "complete"`. If not, stop and report: **Agent 1 failed** — show the actual status value and any error context found in the file.
+2. Run Agent 2 (Chef). After it finishes, read `recipes/02_chef_kitchen.json` and confirm `status === "complete"`. If not, stop and report: **Agent 2 failed**.
+3. Run Agent 3 (Artist). After it finishes, read `recipes/03_artist_manifest.json` and confirm `status === "complete"`. If not, stop and report: **Agent 3 failed**.
+4. Run Agent 4 (Postman). After it finishes, read `recipes/04_postman_delivery.json` and confirm `status === "complete"`. If not, stop and report: **Agent 4 failed**.
+
+On success, report: all four agents completed, the web app URL, and the tunnel address from `recipes/04_postman_delivery.json`.
+
 ## Recipe files
 
 Each agent reads the previous agent's recipe and writes its own. All recipes live in `recipes/`.
