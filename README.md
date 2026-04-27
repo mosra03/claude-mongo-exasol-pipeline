@@ -1,6 +1,6 @@
 # MCP Agentic Data Pipeline
 
-A 4-agent Claude Code pipeline that explores a **MongoDB** collection, runs analytics (with optional **Exasol** SQL), renders interactive ECharts visualisations, and publishes a live web app — end to end, from a single prompt.
+A 4-agent Claude Code pipeline that explores a **MongoDB** collection, runs analytics (with optional **Exasol** SQL), renders interactive ECharts visualisations, and publishes a live data app — end to end, from a single prompt.
 
 ---
 
@@ -27,7 +27,7 @@ Chef runs MongoDB aggregations and writes structured JSON results. Artist reads 
 | **Scientist** | MongoDB MCP | Explores schema, discovers 5 chart-worthy cross-dimensional patterns |
 | **Chef** | MongoDB MCP (+ Exasol MCP optional) | Runs aggregations, shapes data into ECharts-ready series, writes structured JSON |
 | **Artist** | Chef recipe (local JSON) | Reads structured data, generates complete Apache ECharts option configs |
-| **Postman** | Artist recipe (local JSON) | Writes the web app, starts Python server, opens cloudflared public tunnel |
+| **Postman** | Artist recipe (local JSON) | Writes the data app, starts Python server, opens cloudflared public tunnel |
 
 ---
 

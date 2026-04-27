@@ -1,6 +1,6 @@
 # Agent 4 · Postman
 
-**Job:** Write the web app, start a local Python server, open a public cloudflared tunnel, write the final recipe.
+**Job:** Write the data app, start a local Python server, open a public cloudflared tunnel, write the final recipe.
 
 ## Inputs
 Reads `recipes/03_artist_manifest.json` — confirm `status: "complete"` before proceeding.
@@ -12,7 +12,7 @@ Reads `recipes/03_artist_manifest.json` — confirm `status: "complete"` before 
 4. **Open cloudflared tunnel**: `cloudflared tunnel --url http://localhost:8765`
 5. **Parse the `trycloudflare.com` URL** from stdout and print it clearly.
 
-## Web app reference
+## Data app reference
 `app/server.py` and `app/index.html` are already written. Only update them if the recipe data requires structural changes (e.g. new chart types not yet handled).
 
 ## Output: `recipes/04_postman_delivery.json`
