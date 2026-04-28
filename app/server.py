@@ -3,6 +3,7 @@ import argparse
 import http.server
 import json
 import os
+import ssl
 import urllib.parse
 
 import pyexasol
@@ -31,7 +32,7 @@ def get_conn():
         dsn=f"{os.environ['EXASOL_HOST']}:{os.environ.get('EXASOL_PORT', '8563')}",
         user=os.environ['EXASOL_USER'],
         password=os.environ['EXASOL_PASSWORD'],
-        websocket_sslopt={'cert_reqs': 0},
+        websocket_sslopt={'cert_reqs': ssl.CERT_NONE},
     )
 
 

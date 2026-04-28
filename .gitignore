@@ -33,6 +33,7 @@ data/*.ndjson
 recipes/01_scientist_patterns.json
 recipes/02_chef_kitchen.json
 recipes/03_artist_manifest.json
+recipes/04_postman_delivery.json
 
 # App runtime
 app/__pycache__/

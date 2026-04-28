@@ -116,14 +116,20 @@ def main():
         print("✓ NDJSON format confirmed")
 
     # Step 7: Run exasol-json-tables ingest-and-wrap (stream output)
-    print(f"\nStep 3 — Loading {NDJSON_PATH} → RAW.SURVEY_DOCS ...")
+    # Creates RAW."survey_raw" (source) and RAW_WRAPPER."survey_raw" (wrapped, queryable).
+    # If this step fails, re-run manually with the same flags; do not change --name or schemas.
+    print(f"\nStep 3 — Loading {NDJSON_PATH} → RAW_WRAPPER.\"survey_raw\" ...")
     cmd = [
         'exasol-json-tables', 'ingest-and-wrap',
         '--input', NDJSON_PATH,
-        '--table', 'RAW.SURVEY_DOCS',
         '--dsn', f"{host}:{port}",
         '--user', user,
         '--password', password,
+        '--name', 'survey_docs',
+        '--source-schema', 'RAW',
+        '--wrapper-schema', 'RAW_WRAPPER',
+        '--tls',
+        '--exasol-cleanup',
     ]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     for line in proc.stdout:
@@ -132,13 +138,13 @@ def main():
     if proc.returncode != 0:
         print("exasol-json-tables failed")
         sys.exit(1)
-    print("✓ RAW.SURVEY_DOCS created in Exasol")
+    print("✓ RAW_WRAPPER.\"survey_raw\" created in Exasol")
 
     # Step 8: Verify row count
     print(f"\nStep 4 — Verifying row count ...")
-    row = conn.execute("SELECT COUNT(*) FROM RAW.SURVEY_DOCS").fetchone()
+    row = conn.execute('SELECT COUNT(*) FROM RAW_WRAPPER."survey_raw"').fetchone()
     exasol_count = row[0]
-    print(f"✓ Verified: {exasol_count} rows in RAW.SURVEY_DOCS")
+    print(f'✓ Verified: {exasol_count} rows in RAW_WRAPPER."survey_raw"')
 
     # Step 9: Create RECIPES and ANALYTICS schemas
     print(f"\nStep 5 — Creating RECIPES and ANALYTICS schemas ...")
@@ -180,7 +186,7 @@ Ingest complete
 MongoDB collection : {args.db}.{args.collection}
 Rows exported      : {exported_count}
 Rows in Exasol     : {exasol_count}
-Schemas ready      : RAW, RECIPES, ANALYTICS
+Schemas ready      : RAW_WRAPPER, RECIPES, ANALYTICS
 Next step          : Open Claude Code → Run full pipeline
 ════════════════════════════════""")
 

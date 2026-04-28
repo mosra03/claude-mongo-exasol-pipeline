@@ -8,8 +8,8 @@ Activate when the user says "analyse my data", "run pipeline", "explore my colle
 
 ```
 MongoDB Atlas
-     ↓  scripts/ingest.py (mongoexport → exasol-json-tables)
-RAW.SURVEY_DOCS  (Exasol)
+     ↓  scripts/ingest.py (mongoexport → exasol-json-tables ingest-and-wrap)
+RAW_WRAPPER."survey_raw"  (Exasol)
      ↓  Agent 1 – Scientist
 RECIPES.SCIENTIST  (Exasol table)
      ↓  Agent 2 – Chef
@@ -24,7 +24,7 @@ recipes/04_postman_delivery.json  (local, ephemeral tunnel URL)
 
 ```sql
 -- Raw data loaded?
-SELECT COUNT(*) FROM RAW.SURVEY_DOCS;
+SELECT COUNT(*) FROM RAW_WRAPPER."survey_raw";
 
 -- Agent 1 done?
 SELECT status, pattern_count, created_at FROM RECIPES.SCIENTIST ORDER BY created_at DESC LIMIT 1;
@@ -40,8 +40,8 @@ SELECT VIEW_NAME FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = 'ANALYTICS' ORDER BY VIE
 
 | Command | Agent | Reads from | Writes to |
 |---------|-------|-----------|-----------|
-| `Run agent 1 - Scientist` | Scientist | `RAW.SURVEY_DOCS` | `RECIPES.SCIENTIST` |
-| `Run agent 2 - Chef` | Chef | `RECIPES.SCIENTIST`, `RAW.SURVEY_DOCS` | `RECIPES.CHEF`, `ANALYTICS.*` views |
+| `Run agent 1 - Scientist` | Scientist | `RAW_WRAPPER."survey_raw"` | `RECIPES.SCIENTIST` |
+| `Run agent 2 - Chef` | Chef | `RECIPES.SCIENTIST`, `RAW_WRAPPER."survey_raw"` | `RECIPES.CHEF`, `ANALYTICS.*` views |
 | `Run agent 3 - Artist` | Artist | `RECIPES.CHEF`, `ANALYTICS.*` | `app/server.py`, `app/index.html` |
 | `Run agent 4 - Postman` | Postman | filesystem | `recipes/04_postman_delivery.json` |
 | `Run full pipeline` | All 1→2→3→4 | chain | all above |
@@ -85,11 +85,12 @@ Filter fields per view are stored in `RECIPES.CHEF.payload` under each view's `f
 ## What each agent needs to know
 
 ### Scientist — finding good patterns
-- Use Exasol MCP to sample `RAW.SURVEY_DOCS` and run exploratory queries.
+- Use Exasol MCP to sample `RAW_WRAPPER."survey_raw"` and run exploratory queries.
 - Cross-dimensional beats univariate: `ConvertedCompYearly × AISelect` is richer than a count of languages.
 - Write actual numbers from exploratory queries in `insight` — no placeholders.
 - Target chart types: `bar`, `horizontal_bar`, `choropleth`, `grouped_bar`, `line`.
 - Payload goes into `RECIPES.SCIENTIST.payload` as a JSON string.
+- Source table: `RAW_WRAPPER."survey_raw"` — all agent queries go here, not `RAW.SURVEY_DOCS`.
 
 ### Chef — building ANALYTICS views
 - Always filter out `NULL` and `'NA'` before numeric casts.
@@ -124,7 +125,7 @@ Filter fields per view are stored in `RECIPES.CHEF.payload` under each view's `f
 |---------|-------------|-----|
 | `SELECT COUNT(*) FROM RECIPES.SCIENTIST WHERE status = 'complete'` returns 0 | Scientist failed to insert or inserted with status 'pending' | Re-run Agent 1; check Exasol MCP connection |
 | `SELECT COUNT(*) FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = 'ANALYTICS'` < 5 | Chef created fewer than 5 views | Check `RECIPES.CHEF.payload` for view names; re-run Agent 2 |
-| Chef aggregation returns 0 rows | `'NA'` not excluded before numeric filter, or `RAW.SURVEY_DOCS` empty | Verify ingest ran: `SELECT COUNT(*) FROM RAW.SURVEY_DOCS` |
+| Chef aggregation returns 0 rows | `'NA'` not excluded before numeric filter, or `RAW_WRAPPER."survey_raw"` empty | Verify ingest ran: `SELECT COUNT(*) FROM RAW_WRAPPER."survey_raw"` |
 | `app/server.py` missing | Artist did not run or failed mid-write | Re-run Agent 3 |
 | `grep "api/query" app/index.html` fails | Artist baked in static data instead of live queries | Re-run Agent 3 with explicit instruction: no static data |
 | Postman tunnel URL not printed | cloudflared not installed or port 8080 already blocked | `brew install cloudflare/cloudflare/cloudflared`; kill port 8080 |

@@ -93,6 +93,29 @@ DROP SCHEMA ANALYTICS CASCADE;
 ```
 Then re-run `python3 scripts/ingest.py` and the full pipeline.
 
+## Prerequisites
+
+**Virtual environment** — ingest scripts require a venv:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pip install exasol-json-tables
+```
+Run `python3 scripts/ingest.py` only from inside the activated venv.
+
+**Required environment variables:**
+
+| Variable | Used by | Description |
+|----------|---------|-------------|
+| `MONGODB_URI` | `scripts/ingest.py`, `scripts/ingest_exasol.py`, `scripts/load_mongodb.py` | Full MongoDB Atlas connection string |
+| `EXASOL_HOST` | All scripts, MCP server, `app/server.py` | Exasol cluster hostname (e.g. `<cluster>.clusters.exasol.com`) |
+| `EXASOL_USER` | All scripts, MCP server, `app/server.py` | Exasol database username |
+| `EXASOL_PASSWORD` | All scripts, MCP server, `app/server.py` | Exasol password or PAT token |
+| `EXASOL_PORT` | All scripts, `app/server.py` | Exasol port — defaults to `8563` |
+
+Copy `.env.example` to `.env` and fill in your values.
+
 ## Project structure
 
 ```

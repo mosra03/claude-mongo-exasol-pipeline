@@ -18,16 +18,14 @@ Demonstrated here on the [2025 Stack Overflow Developer Survey](https://survey.s
 
 ## How it works
 
-> **Note:** `assets/architecture.svg` reflects the previous MongoDB-centric architecture and needs updating to show the Exasol-first flow described below.
-
 ### Data flow
 
 ```
 MongoDB Atlas
-     ↓  scripts/load_mongodb.py → scripts/ingest_exasol.py
-     │  (file → MongoDB → mongoexport → exasol-json-tables)
+     ↓  scripts/load_mongodb.py  (CSV/JSON → MongoDB — once per dataset)
+     ↓  scripts/ingest.py        (mongoexport → exasol-json-tables ingest-and-wrap)
      ↓
-RAW.SURVEY_DOCS  (Exasol)
+RAW_WRAPPER."survey_raw"  (Exasol — single source of truth)
      ↓  Agent 1 – Scientist
 RECIPES.SCIENTIST  (Exasol table)
      ↓  Agent 2 – Chef
@@ -41,7 +39,7 @@ Public URL (cloudflared)
 
 | Agent | Data source | What it does |
 |-------|-------------|--------------|
-| **Scientist** | Exasol MCP → `RAW.SURVEY_DOCS` | Explores schema, discovers 5 chart-worthy cross-dimensional patterns, writes to `RECIPES.SCIENTIST` |
+| **Scientist** | Exasol MCP → `RAW_WRAPPER."survey_raw"` | Explores schema, discovers 5 chart-worthy cross-dimensional patterns, writes to `RECIPES.SCIENTIST` |
 | **Chef** | Exasol MCP → `RECIPES.SCIENTIST` | Runs SQL aggregations, creates `ANALYTICS` views with `WHERE 1=1` filter hooks, writes to `RECIPES.CHEF` |
 | **Artist** | Exasol MCP → `RECIPES.CHEF` + `ANALYTICS.*` | Queries views for shape, generates `app/server.py` (pyexasol, live queries) and `app/index.html` (ECharts, no static data) |
 | **Postman** | filesystem | Installs pyexasol, starts server on port 8080, opens cloudflared tunnel, writes `recipes/04_postman_delivery.json` |
@@ -54,7 +52,7 @@ Check pipeline progress at any time via SQL:
 
 ```sql
 -- Raw data loaded?
-SELECT COUNT(*) FROM RAW.SURVEY_DOCS;
+SELECT COUNT(*) FROM RAW_WRAPPER."survey_raw";
 
 -- Agent 1 complete?
 SELECT status, pattern_count, created_at FROM RECIPES.SCIENTIST ORDER BY created_at DESC LIMIT 1;
@@ -71,7 +69,7 @@ To reset and re-run from scratch:
 DROP SCHEMA RECIPES CASCADE;
 DROP SCHEMA ANALYTICS CASCADE;
 ```
-Then run `python3 scripts/ingest_exasol.py` and `Run full pipeline`.
+Then run `python3 scripts/ingest.py` and `Run full pipeline`.
 
 ---
 
@@ -147,10 +145,22 @@ Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-lab
    ```bash
    git clone https://github.com/mosra03/mcp-agentic-data-pipeline.git
    cd mcp-agentic-data-pipeline
-   claude
    ```
 
-3. **Set environment variables** (or copy `.env.example` to `.env`):
+3. **Create a virtual environment and install dependencies**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate   # Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   pip install exasol-json-tables
+   ```
+
+4. **Set environment variables** — copy `.env.example` to `.env` and fill in your values:
+   ```bash
+   cp .env.example .env
+   # then edit .env
+   ```
+   Required:
    ```bash
    MONGODB_URI=mongodb+srv://...
    EXASOL_HOST=<your-cluster>.clusters.exasol.com
@@ -159,24 +169,30 @@ Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-lab
    EXASOL_PASSWORD=<your-password>
    ```
 
-4. **Export from MongoDB and load into Exasol** (once per dataset):
+5. **Export from MongoDB and load into Exasol** (once per dataset):
    ```bash
-   python3 scripts/ingest_exasol.py
+   source venv/bin/activate
+   python3 scripts/ingest.py
    ```
    This exports whatever is in MongoDB and loads it into Exasol via `exasol-json-tables`. Run this again any time you want to refresh Exasol with latest MongoDB data.
 
-   > **Steps 1 and 4 are independent.**
-   > Already have data in MongoDB? Skip step 1, run step 4 only.
-   > Want to use a new dataset? Run step 1 with your new file, then step 4.
+   > **Steps 1 and 5 are independent.**
+   > Already have data in MongoDB? Skip step 1, run step 5 only.
+   > Want to use a new dataset? Run step 1 with your new file, then step 5.
    > MongoDB IP error? Update at: MongoDB Atlas → Security → Network Access
 
-5. **Verify your MCP connections**
+6. **Open in Claude Code**
+   ```bash
+   claude
+   ```
+
+7. **Verify your MCP connections**
    ```
    /mcp
    ```
    `exasol-mcp` must show as connected. `mongodb-mcp` is optional after ingest.
 
-6. **Run the full pipeline with one prompt**
+8. **Run the full pipeline with one prompt**
    ```
    Run full pipeline
    ```
@@ -188,7 +204,7 @@ Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-lab
    Run agent 4 - Postman
    ```
 
-7. **Open your live URL** — printed at the end of Agent 4. Works in any browser, no login.
+9. **Open your live URL** — printed at the end of Agent 4. Works in any browser, no login.
 
 > The `data-pipeline-analyst` skill in `skills/` auto-loads in Claude Code, giving every agent full pipeline context without re-reading the repo each time.
 
