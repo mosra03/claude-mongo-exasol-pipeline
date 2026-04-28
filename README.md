@@ -1,16 +1,16 @@
 # MCP Agentic Data Pipeline
 
-A 4-agent Claude Code pipeline that explores a **MongoDB** collection, runs analytics (with optional **Exasol** SQL), renders interactive ECharts visualisations, and publishes a live data app — end to end, from a single prompt.
+A 4-agent Claude Code pipeline that exports a **MongoDB** collection into **Exasol**, builds live SQL analytics views, renders interactive ECharts visualisations, and publishes a live data app — end to end, from a single prompt.
 
 ---
 
 ## What this is
 
-Point it at any MongoDB collection. Say **"Run full pipeline."** Four specialised agents — Scientist, Chef, Artist, Postman — discover patterns, run aggregations, render Apache ECharts charts, and publish a public URL via a cloudflared tunnel. No human steps between raw data and live app.
+Point it at any MongoDB collection. Say **"Run full pipeline."** Four specialised agents — Scientist, Chef, Artist, Postman — discover patterns, build Exasol SQL views, render Apache ECharts charts, and publish a public URL via a cloudflared tunnel. No human steps between raw data and live app.
 
 Built for developers who want to see what AI-native data engineering looks like in practice.
 
-> **Why Exasol:** Exasol is the analytics engine — its in-memory MPP architecture delivers sub-second query performance on the full dataset, even on a free-trial instance.
+> **Why Exasol:** Exasol is the single source of truth — raw data, recipes, and analytics views all live there. Its in-memory MPP architecture delivers sub-second query performance on the full dataset, even on a free-trial instance. The data app queries Exasol live on every user interaction; no static data is baked in anywhere.
 
 Demonstrated here on the [2025 Stack Overflow Developer Survey](https://survey.stackoverflow.co/2025) — 49,191 developers across 177 countries.
 
@@ -18,16 +18,60 @@ Demonstrated here on the [2025 Stack Overflow Developer Survey](https://survey.s
 
 ## How it works
 
-![Architecture](assets/architecture.svg)
+> **Note:** `assets/architecture.svg` reflects the previous MongoDB-centric architecture and needs updating to show the Exasol-first flow described below.
 
-Chef runs MongoDB aggregations and writes structured JSON results. Artist reads that JSON and generates ECharts configs. Exasol MCP is available to Chef for optional SQL analytics if connected. Each agent reads the previous recipe file, validates `status: "complete"`, does its work, and writes its own. Any failure stops the pipeline immediately and reports which agent broke and why.
+### Data flow
+
+```
+MongoDB Atlas
+     ↓  scripts/ingest.py
+     │  (mongoexport → exasol-json-tables ingest-and-wrap)
+     ↓
+RAW.SURVEY_DOCS  (Exasol)
+     ↓  Agent 1 – Scientist
+RECIPES.SCIENTIST  (Exasol table)
+     ↓  Agent 2 – Chef
+RECIPES.CHEF  (Exasol table)
+ANALYTICS.*   (5 Exasol views)
+     ↓  Agent 3 – Artist
+app/server.py + app/index.html
+     ↓  Agent 4 – Postman
+Public URL (cloudflared)
+```
 
 | Agent | Data source | What it does |
 |-------|-------------|--------------|
-| **Scientist** | MongoDB MCP | Explores schema, discovers 5 chart-worthy cross-dimensional patterns |
-| **Chef** | MongoDB MCP (+ Exasol MCP optional) | Runs aggregations, shapes data into ECharts-ready series, writes structured JSON |
-| **Artist** | Chef recipe (local JSON) | Reads structured data, generates complete Apache ECharts option configs |
-| **Postman** | Artist recipe (local JSON) | Writes the data app, starts Python server, opens cloudflared public tunnel |
+| **Scientist** | Exasol MCP → `RAW.SURVEY_DOCS` | Explores schema, discovers 5 chart-worthy cross-dimensional patterns, writes to `RECIPES.SCIENTIST` |
+| **Chef** | Exasol MCP → `RECIPES.SCIENTIST` | Runs SQL aggregations, creates `ANALYTICS` views with `WHERE 1=1` filter hooks, writes to `RECIPES.CHEF` |
+| **Artist** | Exasol MCP → `RECIPES.CHEF` + `ANALYTICS.*` | Queries views for shape, generates `app/server.py` (pyexasol, live queries) and `app/index.html` (ECharts, no static data) |
+| **Postman** | filesystem | Installs pyexasol, starts server on port 8080, opens cloudflared tunnel, writes `recipes/04_postman_delivery.json` |
+
+---
+
+## Pipeline state
+
+Check pipeline progress at any time via SQL:
+
+```sql
+-- Raw data loaded?
+SELECT COUNT(*) FROM RAW.SURVEY_DOCS;
+
+-- Agent 1 complete?
+SELECT status, pattern_count, created_at FROM RECIPES.SCIENTIST ORDER BY created_at DESC LIMIT 1;
+
+-- Agent 2 complete?
+SELECT status, view_count, created_at FROM RECIPES.CHEF ORDER BY created_at DESC LIMIT 1;
+
+-- Analytics views built?
+SELECT VIEW_NAME FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = 'ANALYTICS' ORDER BY VIEW_NAME;
+```
+
+To reset and re-run from scratch:
+```sql
+DROP SCHEMA RECIPES CASCADE;
+DROP SCHEMA ANALYTICS CASCADE;
+```
+Then re-run `python3 scripts/ingest.py` and `Run full pipeline`.
 
 ---
 
@@ -40,9 +84,11 @@ Works with **any** MongoDB collection — swap the Stack Overflow survey for you
 | Tool | Install |
 |------|---------|
 | Python 3.10+ | `brew install python` or [python.org](https://python.org) |
+| pyexasol | `pip install pyexasol` |
 | Claude Code | `npm install -g @anthropic-ai/claude-code` |
 | MongoDB Atlas | Free M0 at [cloud.mongodb.com](https://cloud.mongodb.com) |
-| MongoDB MCP Server | See MCP config below |
+| MongoDB Tools (mongoexport) | `brew install mongodb-database-tools` |
+| exasol-json-tables | `pip install exasol-json-tables` |
 | Exasol | See "Getting Exasol" below |
 | Exasol MCP Server | See MCP config below |
 | cloudflared | `brew install cloudflare/cloudflare/cloudflared` |
@@ -85,6 +131,8 @@ Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-lab
 }
 ```
 
+> `mongodb-mcp` is used only if you re-run `scripts/ingest.py` interactively. The pipeline agents connect to Exasol only.
+
 ### Steps
 
 1. **Load your data into MongoDB Atlas** — any collection, any schema. For the Stack Overflow example: download the 2025 survey CSV from [survey.stackoverflow.co/2025](https://survey.stackoverflow.co/2025), import it into `stackoverflow.survey_2025`.
@@ -96,17 +144,28 @@ Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-lab
    claude
    ```
 
-3. **Verify your MCP connections**
+3. **Set environment variables** (or copy `.env.example` to `.env`):
+   ```bash
+   MONGODB_URI=mongodb+srv://...
+   EXASOL_HOST=<your-cluster>.clusters.exasol.com
+   EXASOL_PORT=8563
+   EXASOL_USER=<your-user>
+   EXASOL_PASSWORD=<your-password>
+   ```
+
+4. **Ingest data** (one-time setup):
+   ```bash
+   python3 scripts/ingest.py
+   ```
+   This runs `mongoexport`, ingests the NDJSON into Exasol via `exasol-json-tables`, and creates the `RECIPES` schema.
+
+5. **Verify your MCP connections**
    ```
    /mcp
    ```
-   Both servers must show as connected before running the pipeline:
-   ```
-   mongodb-mcp: npx ... — ✓ Connected
-   exasol-mcp:  uvx ... — ✓ Connected
-   ```
+   `exasol-mcp` must show as connected. `mongodb-mcp` is optional after ingest.
 
-4. **Run the full pipeline with one prompt**
+6. **Run the full pipeline with one prompt**
    ```
    Run full pipeline
    ```
@@ -118,7 +177,7 @@ Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-lab
    Run agent 4 - Postman
    ```
 
-5. **Open your live URL** — printed at the end of Agent 4. Works in any browser, no login.
+7. **Open your live URL** — printed at the end of Agent 4. Works in any browser, no login.
 
 > The `data-pipeline-analyst` skill in `skills/` auto-loads in Claude Code, giving every agent full pipeline context without re-reading the repo each time.
 
@@ -134,7 +193,7 @@ Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-lab
 
 | Tool | How it's used |
 |------|---------------|
-| [exasol-json-tables](https://github.com/exasol-labs/exasol-json-tables) | Ingests NDJSON result sets from MongoDB into native Exasol tables — zero schema config required |
+| [exasol-json-tables](https://github.com/exasol-labs/exasol-json-tables) | Ingests NDJSON from MongoDB into native Exasol tables — zero schema config required; activates JSON path syntax for nested fields |
 | [exasol-agent-skills](https://github.com/exasol-labs/exasol-agent-skills) | Claude Code plugin that gives Claude deep Exasol SQL expertise (functions, types, aggregations) |
 | [exapump](https://github.com/exasol-labs/exapump) | Fast CLI for bulk data import/export between local files and Exasol |
 | [Exasol MCP Server](https://github.com/exasol/mcp-server) | MCP server connecting Claude Code directly to Exasol for SQL queries and schema inspection |
@@ -164,13 +223,14 @@ Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-lab
 
 | Component | Role |
 |-----------|------|
-| **Claude Code** | Orchestrator — drives agents, validates recipes, enforces sequencing |
-| **MongoDB Atlas M0** | Source database — stores survey data as BSON documents |
-| **Exasol SaaS** | Analytics engine — in-memory MPP SQL for sub-second aggregations |
-| **MongoDB MCP Server** | Gives Claude Code direct read access to Atlas |
-| **Exasol MCP Server** | Gives Claude Code direct query access to Exasol |
+| **Claude Code** | Orchestrator — drives agents, validates Exasol state, enforces sequencing |
+| **MongoDB Atlas M0** | Source database — stores survey data as BSON documents; exported once via mongoexport |
+| **Exasol SaaS** | Single source of truth — RAW data, recipe tables, analytics views, live queries |
+| **exasol-json-tables** | Loads NDJSON into Exasol with JSON path query support |
+| **Exasol MCP Server** | Gives Claude Code direct query access to Exasol for all pipeline agents |
+| **pyexasol** | Python driver used by the live data app server to query Exasol |
 | **Apache ECharts** | Client-side charting — bar, choropleth, line, grouped bar |
-| **Python http.server** | Minimal web server — serves `index.html` and `/api/data` |
+| **Python http.server** | Minimal web server — serves `index.html` and `/api/query` (live Exasol queries) |
 | **cloudflared Quick Tunnel** | Instant public HTTPS URL — no account or port-forwarding needed |
 
 ---

@@ -1,8 +1,6 @@
 # Orchestrator
 
-You coordinate a 4-agent data pipeline over the 2025 Stack Overflow Developer Survey.
-
-Run each agent in sequence. Validate `status: "complete"` in each output recipe before advancing. If an agent fails, diagnose and retry before escalating to the user.
+You coordinate a 4-agent data pipeline over the 2025 Stack Overflow Developer Survey. Exasol is the single source of truth. Validate pipeline state via SQL, not local files.
 
 ## Single-prompt commands
 
@@ -12,31 +10,73 @@ Run each agent in sequence. Validate `status: "complete"` in each output recipe 
 | `Run agent 2 - Chef` | Run Chef only |
 | `Run agent 3 - Artist` | Run Artist only |
 | `Run agent 4 - Postman` | Run Postman only |
-| `Run full pipeline` | Run all four in sequence (1→2→3→4) |
+| `Run full pipeline` | ingest → Scientist → Chef → Artist → Postman |
 
-## Recipe contract
+## Full pipeline sequence
 
-Every agent must:
-1. Read its input recipe and confirm `status: "complete"` (Agent 1 has no input recipe).
-2. Abort if the prerequisite is not `status: "complete"`.
-3. Write its output recipe with this structure:
-
-```json
-{
-  "agent_name": "<name>",
-  "status": "complete",
-  "timestamp": "<ISO-8601>",
-  "results": { }
-}
+```
+scripts/ingest.py → Agent 1 → Agent 2 → Agent 3 → Agent 4
 ```
 
-## Pipeline sequence
+### Step 0 — Ingest (pre-pipeline)
+Run `python3 scripts/ingest.py` to export MongoDB → NDJSON → Exasol `RAW.SURVEY_DOCS` and create `RECIPES` schema.
+Skip if `RAW.SURVEY_DOCS` already has rows:
+```sql
+SELECT COUNT(*) FROM RAW.SURVEY_DOCS;
+```
 
-| # | Agent | Reads | Writes |
-|---|-------|-------|--------|
-| 1 | Scientist | _(none)_ | `recipes/01_scientist_patterns.json` |
-| 2 | Chef | `recipes/01_scientist_patterns.json` | `recipes/02_chef_kitchen.json` |
-| 3 | Artist | `recipes/02_chef_kitchen.json` | `recipes/03_artist_manifest.json` |
-| 4 | Postman | `recipes/03_artist_manifest.json` | `recipes/04_postman_delivery.json` |
+### After Agent 1 — Scientist validation
+```sql
+SELECT COUNT(*) FROM RECIPES.SCIENTIST WHERE status = 'complete';
+```
+Must return > 0. If 0: **Agent 1 failed** — inspect `RECIPES.SCIENTIST` for rows with `status = 'pending'` or `status = 'error'` and report the issue.
 
-On success: report all four agents complete, the local URL, and the public tunnel URL from `recipes/04_postman_delivery.json`.
+### After Agent 2 — Chef validation
+```sql
+SELECT COUNT(*) FROM RECIPES.CHEF WHERE status = 'complete';
+SELECT COUNT(*) FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = 'ANALYTICS';
+```
+First must return > 0. Second must return 5. If either fails: **Agent 2 failed** — report which check failed and the actual count.
+
+### After Agent 3 — Artist validation
+```bash
+test -f app/server.py && echo "server.py OK"
+test -f app/index.html && echo "index.html OK"
+grep -l "EXASOL_HOST" app/server.py
+grep -l "api/query" app/index.html
+```
+All four checks must pass. If any fails: **Agent 3 failed**.
+
+### After Agent 4 — Postman validation
+- `recipes/04_postman_delivery.json` must have `status: "complete"`
+- `public_url` must contain `trycloudflare.com`
+
+## On success
+Report:
+- All four agents completed
+- Local URL: `http://localhost:8080`
+- Public tunnel URL from `recipes/04_postman_delivery.json`
+
+## On failure
+Stop immediately. Report:
+- Which agent failed
+- The Exasol query result or filesystem check that failed
+- The actual value vs expected value
+
+## How to reset the pipeline
+```sql
+DROP SCHEMA RECIPES CASCADE;
+DROP SCHEMA ANALYTICS CASCADE;
+```
+Then re-run `scripts/ingest.py` and the full pipeline.
+
+## Pipeline state reference
+
+| What to check | SQL / command |
+|---------------|---------------|
+| Raw data loaded | `SELECT COUNT(*) FROM RAW.SURVEY_DOCS` |
+| Agent 1 complete | `SELECT COUNT(*) FROM RECIPES.SCIENTIST WHERE status = 'complete'` |
+| Agent 2 complete | `SELECT COUNT(*) FROM RECIPES.CHEF WHERE status = 'complete'` |
+| Analytics views built | `SELECT COUNT(*) FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = 'ANALYTICS'` |
+| Agent 3 complete | `test -f app/server.py && test -f app/index.html` |
+| Agent 4 complete | Read `recipes/04_postman_delivery.json` → status |

@@ -2,80 +2,130 @@
 
 Activate when the user says "analyse my data", "run pipeline", "explore my collection", or triggers any single-prompt agent command from CLAUDE.md.
 
-## How this pipeline works
+## Architecture
 
-A 4-agent sequence where each agent reads the previous recipe (JSON handoff file), does its work, and writes its own recipe. The Orchestrator validates `status: "complete"` before advancing. Any failure stops the pipeline.
+**Exasol is the single source of truth.** MongoDB is the source — data is exported once via `scripts/ingest.py`. All agents read from and write to Exasol only.
 
-### Agent sequence
-
-| Command | Agent | Reads | Writes |
-|---------|-------|-------|--------|
-| `Run agent 1 - Scientist` | Scientist | _(none)_ | `recipes/01_scientist_patterns.json` |
-| `Run agent 2 - Chef` | Chef | `recipes/01_scientist_patterns.json` | `recipes/02_chef_kitchen.json` |
-| `Run agent 3 - Artist` | Artist | `recipes/02_chef_kitchen.json` | `recipes/03_artist_manifest.json` |
-| `Run agent 4 - Postman` | Postman | `recipes/03_artist_manifest.json` | `recipes/04_postman_delivery.json` |
-| `Run full pipeline` | All 1→2→3→4 | chain | all four |
-
-### Recipe contract
-
-Every recipe must have this shape:
-```json
-{
-  "agent_name": "<name>",
-  "status": "complete",
-  "timestamp": "<ISO-8601>",
-  "results": { }
-}
+```
+MongoDB Atlas
+     ↓  scripts/ingest.py (mongoexport → exasol-json-tables)
+RAW.SURVEY_DOCS  (Exasol)
+     ↓  Agent 1 – Scientist
+RECIPES.SCIENTIST  (Exasol table)
+     ↓  Agent 2 – Chef
+RECIPES.CHEF  (Exasol table)  +  ANALYTICS.*  (Exasol views ×5)
+     ↓  Agent 3 – Artist
+app/server.py + app/index.html  (filesystem)
+     ↓  Agent 4 – Postman
+recipes/04_postman_delivery.json  (local, ephemeral tunnel URL)
 ```
 
-An agent must see `status: "complete"` in its input recipe before proceeding. Agent 1 has no input recipe.
+## How to check pipeline state
 
-## Data source
+```sql
+-- Raw data loaded?
+SELECT COUNT(*) FROM RAW.SURVEY_DOCS;
 
-- **MongoDB Atlas** — database `stackoverflow`, collection `survey_2025`
-- 49,191 documents, 173 fields
-- All numeric fields (e.g. `ConvertedCompYearly`, `YearsCode`, `JobSat`) are stored as strings — always `$convert` with `onError: null`
-- `"NA"` is the null sentinel — always exclude before any numeric operation
-- Multi-select fields (e.g. `AIModelsHaveWorkedWith`) use `";"` as delimiter — `$split`, `$unwind`, trim whitespace
+-- Agent 1 done?
+SELECT status, pattern_count, created_at FROM RECIPES.SCIENTIST ORDER BY created_at DESC LIMIT 1;
+
+-- Agent 2 done?
+SELECT status, view_count, created_at FROM RECIPES.CHEF ORDER BY created_at DESC LIMIT 1;
+
+-- Analytics views built?
+SELECT VIEW_NAME FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = 'ANALYTICS' ORDER BY VIEW_NAME;
+```
+
+## Agent sequence and Exasol connections
+
+| Command | Agent | Reads from | Writes to |
+|---------|-------|-----------|-----------|
+| `Run agent 1 - Scientist` | Scientist | `RAW.SURVEY_DOCS` | `RECIPES.SCIENTIST` |
+| `Run agent 2 - Chef` | Chef | `RECIPES.SCIENTIST`, `RAW.SURVEY_DOCS` | `RECIPES.CHEF`, `ANALYTICS.*` views |
+| `Run agent 3 - Artist` | Artist | `RECIPES.CHEF`, `ANALYTICS.*` | `app/server.py`, `app/index.html` |
+| `Run agent 4 - Postman` | Postman | filesystem | `recipes/04_postman_delivery.json` |
+| `Run full pipeline` | All 1→2→3→4 | chain | all above |
+
+All agents connect via **Exasol MCP**. MongoDB MCP is used only by `scripts/ingest.py`.
+
+## Recipe tables schema
+
+### RECIPES.SCIENTIST
+| Column | Type | Notes |
+|--------|------|-------|
+| recipe_id | VARCHAR(50) | UUID |
+| agent_name | VARCHAR(50) | 'scientist' |
+| status | VARCHAR(20) | 'pending' or 'complete' |
+| created_at | TIMESTAMP | |
+| pattern_count | INT | Should be 5 |
+| payload | VARCHAR(2000000) | JSON: patterns array |
+
+### RECIPES.CHEF
+| Column | Type | Notes |
+|--------|------|-------|
+| recipe_id | VARCHAR(50) | UUID |
+| agent_name | VARCHAR(50) | 'chef' |
+| status | VARCHAR(20) | 'pending' or 'complete' |
+| created_at | TIMESTAMP | |
+| view_count | INT | Should be 5 |
+| payload | VARCHAR(2000000) | JSON: views array with filter_fields |
+
+## ANALYTICS views and filter fields
+
+Agent 2 creates 5 views in the `ANALYTICS` schema — names derive from the patterns Agent 1 discovers. Each view includes a `WHERE 1=1` clause for dynamic filter appends.
+
+To inspect available views and their columns:
+```sql
+SELECT VIEW_NAME, VIEW_TEXT FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = 'ANALYTICS';
+SELECT COLUMN_NAME, COLUMN_TYPE FROM EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA = 'ANALYTICS';
+```
+
+Filter fields per view are stored in `RECIPES.CHEF.payload` under each view's `filter_fields` array.
 
 ## What each agent needs to know
 
 ### Scientist — finding good patterns
-- Cross-dimensional beats univariate: `ConvertedCompYearly × AISelect` is richer than a simple count of languages.
-- Prefer questions where the answer is surprising or challenges a common assumption.
+- Use Exasol MCP to sample `RAW.SURVEY_DOCS` and run exploratory queries.
+- Cross-dimensional beats univariate: `ConvertedCompYearly × AISelect` is richer than a count of languages.
+- Write actual numbers from exploratory queries in `insight` — no placeholders.
 - Target chart types: `bar`, `horizontal_bar`, `choropleth`, `grouped_bar`, `line`.
-- Write `key_stats` with actual numbers from sample aggregations — not placeholders.
+- Payload goes into `RECIPES.SCIENTIST.payload` as a JSON string.
 
-### Chef — running aggregations
-- Always filter out `"NA"` before converting strings to numbers.
-- Compensation filter: `{ $gte: 0, $lte: 2000000 }` after conversion.
-- Insight string rule: one sentence, two or more specific numbers. Example: *"Remote developers earn 58% more ($108K vs $68K in-person)."*
-- For choropleth: use full country names matching ECharts world map — not ISO codes.
+### Chef — building ANALYTICS views
+- Always filter out `NULL` and `'NA'` before numeric casts.
+- Compensation filter: `CAST(ConvertedCompYearly AS DOUBLE) BETWEEN 0 AND 2000000`.
+- Multi-value fields (`;` delimited): unnest with lateral join or recursive split.
+- Each view must have `WHERE 1=1` for dynamic filter injection by the server.
+- Insight: one sentence, two or more specific numbers.
 
-### Artist — generating ECharts configs
-- Use pure JSON — no JavaScript function strings in `formatter`.
-- Dark theme: `backgroundColor: "#0f172a"`, primary accent `#38bdf8`, surface `#1e293b`, muted text `#94a3b8`.
-- Choropleth requires `visualMap` component and world geo registered from CDN.
-- Truncate x-axis labels to 20 chars; rotate if more than 5 categories.
+### Artist — generating the data app
+- Reads `RECIPES.CHEF.payload` to get view names and filter fields.
+- Queries each `ANALYTICS` view (`LIMIT 100`) to understand column shape.
+- `server.py`: connects to Exasol via pyexasol, serves `/api/query`, validates view names, enforces SELECT-only.
+- `index.html`: 5 chart tabs, filter controls per view, live fetch on filter change — no static data.
+- Dark theme: background `#1A1A2E`, primary accent `#E94560`.
 
 ### Postman — publishing the app
-- Kill any existing server on port 8765 before starting: `lsof -ti:8765 | xargs kill -9 2>/dev/null || true`
-- Verify server is alive with `curl -s http://localhost:8765/api/data` before opening tunnel.
-- Parse `trycloudflare.com` URL from cloudflared stdout — it appears after `+------------------+`.
-- `app/server.py` and `app/index.html` are already written — only rewrite if chart structure changes.
+- Port 8080 (not 8765).
+- Verify server: `curl -s "http://localhost:8080/api/query?view_name=test"` — 400 response means server is alive.
+- Parse `trycloudflare.com` URL from cloudflared stdout.
+- Write `recipes/04_postman_delivery.json` — the only local recipe file.
 
 ## MCP servers needed
 
 | Server | Purpose |
 |--------|---------|
-| `mongodb-mcp` | Required — used by Scientist (schema inspection) and Chef (aggregations) |
-| `exasol-mcp` | Optional — used by Chef for SQL analytics if connected; not required for the default MongoDB-only path |
+| `exasol-mcp` | **Required** — used by all three data agents (Scientist, Chef, Artist) |
+| `mongodb-mcp` | **Not needed during pipeline** — only `scripts/ingest.py` uses mongoexport |
 
 ## Failure diagnosis
 
-| Symptom | Likely cause |
-|---------|-------------|
-| Scientist writes `status: "pending"` | MongoDB MCP not connected or collection empty |
-| Chef aggregation returns 0 results | `"NA"` not excluded before numeric filter |
-| Artist produces invalid JSON | JavaScript function used in formatter — replace with template string |
-| Postman tunnel URL not printed | cloudflared not installed or port 8765 already blocked |
+| Symptom | Likely cause | Fix |
+|---------|-------------|-----|
+| `SELECT COUNT(*) FROM RECIPES.SCIENTIST WHERE status = 'complete'` returns 0 | Scientist failed to insert or inserted with status 'pending' | Re-run Agent 1; check Exasol MCP connection |
+| `SELECT COUNT(*) FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = 'ANALYTICS'` < 5 | Chef created fewer than 5 views | Check `RECIPES.CHEF.payload` for view names; re-run Agent 2 |
+| Chef aggregation returns 0 rows | `'NA'` not excluded before numeric filter, or `RAW.SURVEY_DOCS` empty | Verify ingest ran: `SELECT COUNT(*) FROM RAW.SURVEY_DOCS` |
+| `app/server.py` missing | Artist did not run or failed mid-write | Re-run Agent 3 |
+| `grep "api/query" app/index.html` fails | Artist baked in static data instead of live queries | Re-run Agent 3 with explicit instruction: no static data |
+| Postman tunnel URL not printed | cloudflared not installed or port 8080 already blocked | `brew install cloudflare/cloudflare/cloudflared`; kill port 8080 |
+| Server 500 on `/api/query` | pyexasol not installed or Exasol credentials wrong | `pip install pyexasol`; check env vars |

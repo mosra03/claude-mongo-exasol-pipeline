@@ -1,2 +1,11 @@
-# No external dependencies — app/server.py uses Python stdlib only
-# Python 3.8+ required
+# Python 3.10+ required
+
+# Data app server — connects to Exasol for live queries
+pyexasol
+
+# Ingest script — loads NDJSON into Exasol
+# Install separately: pip install exasol-json-tables
+# (not on PyPI as a standard package — see https://github.com/exasol-labs/exasol-json-tables)
+
+# Note: app/server.py also uses Python stdlib only (http.server, json, argparse)
+# pyexasol is the only third-party dependency required at runtime

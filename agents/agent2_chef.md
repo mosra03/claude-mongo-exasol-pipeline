@@ -1,45 +1,91 @@
 # Agent 2 · Chef
 
-**Job:** Run MongoDB aggregations for each pattern, shape data into ECharts-ready series, write the second recipe.
+**Job:** Read patterns from `RECIPES.SCIENTIST`, create `ANALYTICS` views in Exasol for each pattern, write results to `RECIPES.CHEF`.
 
-## Inputs
-Reads `recipes/01_scientist_patterns.json` — confirm `status: "complete"` before proceeding.
+**Single prompt trigger:** `Run agent 2 - Chef`
+
+## Prerequisite
+```sql
+SELECT COUNT(*) FROM RECIPES.SCIENTIST WHERE status = 'complete';
+```
+Must return > 0. If not, stop and report: **Agent 1 has not completed — run Agent 1 first.**
+
+## Data source
+- **Exasol only** — reads from `RECIPES.SCIENTIST` and queries `RAW.SURVEY_DOCS`
+- Connect via **Exasol MCP** — do not use MongoDB MCP.
 
 ## Steps
-For each pattern in the Scientist's recipe:
-1. Write a MongoDB aggregation pipeline that produces a clean result set (≤ 200 rows).
-2. Handle data quality: all numeric fields are stored as strings; use `$convert` with `onError: null`. Always exclude `"NA"` before numeric conversion.
-3. Compute the metric (avg, count, percent) and sort the result meaningfully.
-4. Shape into ECharts-ready arrays: `xAxis_labels` (or `yAxis_labels`), `series` data arrays, and an `insight` string — one sharp sentence that names the key finding with numbers.
 
-## Field notes
-- `ConvertedCompYearly`, `YearsCode`, `JobSat` — strings; always `$convert` to double.
-- Multi-select fields (e.g. `AIModelsHaveWorkedWith`, `LanguageHaveWorkedWith`) — split on `";"`, `$unwind`, trim whitespace before grouping.
-- Filter compensation to `$0–$2M` to remove outliers.
+For each pattern in the `payload` from `RECIPES.SCIENTIST`:
+
+1. Write a SQL query against `RAW.SURVEY_DOCS` that produces a clean result set (≤ 200 rows).
+2. Apply data quality rules:
+   - Exclude rows where the relevant fields are `NULL` or `'NA'`
+   - Cast numeric strings to `DOUBLE`: `CAST(field AS DOUBLE)`
+   - Filter `ConvertedCompYearly` to `>= 0 AND <= 2000000`
+   - Multi-value fields (`;` delimited): use `REGEXP_REPLACE` + `CROSS JOIN` to unnest
+3. Create the view in the `ANALYTICS` schema:
+   ```sql
+   CREATE SCHEMA IF NOT EXISTS ANALYTICS;
+
+   CREATE OR REPLACE VIEW ANALYTICS.<pattern_name> AS
+   SELECT <columns>
+   FROM RAW.SURVEY_DOCS
+   WHERE 1=1
+     AND <field> IS NOT NULL
+     AND <field> != 'NA'
+   -- additional filter placeholders as comments for dynamic filters
+   ;
+   ```
+4. Each view must be filterable — include `WHERE 1=1` so the server can append dynamic `AND` clauses.
+5. Verify the view returns data: `SELECT COUNT(*) FROM ANALYTICS.<pattern_name>`
+
+## Field handling notes
+- `ConvertedCompYearly`, `YearsCode`, `JobSat` — stored as strings; always `CAST(x AS DOUBLE)`.
+- Multi-select fields (e.g. `AIModelsHaveWorkedWith`) — split on `';'`, unwind via lateral join or recursive split before grouping.
 - Do not hard-code country or language lists — derive them from the data.
 
 ## What makes a good insight string
-One sentence. Name the finding. Include at least two numbers. Example: *"Fully remote developers earn 58% more than in-person ($108K vs $68K)."*
+One sentence. Name the finding. Include at least two specific numbers.
+Example: *"Fully remote developers earn 58% more than in-person ($116K vs $70K)."*
 
-## Output: `recipes/02_chef_kitchen.json`
+## Output
+Write a single row to `RECIPES.CHEF`:
+
+```sql
+INSERT INTO RECIPES.CHEF (recipe_id, agent_name, status, created_at, view_count, payload)
+VALUES (
+    '<uuid>',
+    'chef',
+    'complete',
+    NOW(),
+    5,
+    '<JSON blob>'
+);
+```
+
+The `payload` JSON must have this structure:
 ```json
 {
-  "agent_name": "Chef",
-  "status": "complete",
-  "timestamp": "<ISO-8601>",
-  "source_recipe": "recipes/01_scientist_patterns.json",
-  "charts": [
+  "views": [
     {
-      "id": 1,
-      "title": "<title from pattern>",
-      "question": "<question from pattern>",
-      "chart_type": "<type from pattern>",
-      "echarts_data": {
-        "xAxis_labels": ["..."],
-        "series": [{ "name": "...", "data": [0] }],
-        "insight": "<one sharp sentence with numbers>"
-      }
+      "pattern_id": 1,
+      "view_name": "ANALYTICS.<pattern_name>",
+      "columns": ["col_a", "col_b"],
+      "filter_fields": ["field1", "field2"],
+      "insight": "<one sharp sentence with numbers>",
+      "key_finding": "<what this view reveals>"
     }
   ]
 }
 ```
+
+**Do not write any local file.** The recipe lives in Exasol only.
+
+## Verification
+After writing, confirm both:
+```sql
+SELECT COUNT(*) FROM RECIPES.CHEF WHERE status = 'complete';
+SELECT COUNT(*) FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = 'ANALYTICS';
+```
+First must return 1. Second must return 5.

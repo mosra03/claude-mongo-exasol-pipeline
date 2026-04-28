@@ -20,12 +20,19 @@ pip-wheel-metadata/
 .env.local
 .env.*.local
 
-# Data files (keep structure, ignore large binaries)
+# Data files (keep structure, ignore large exports)
 data/*.csv
 data/*.zip
 data/*.parquet
 data/*.json
+data/*.ndjson
 !data/.gitkeep
+
+# Recipes 01–03 are stored in Exasol (RECIPES.SCIENTIST, RECIPES.CHEF tables)
+# and are no longer local files. Only recipe 04 is local (ephemeral tunnel URL).
+recipes/01_scientist_patterns.json
+recipes/02_chef_kitchen.json
+recipes/03_artist_manifest.json
 
 # App runtime
 app/__pycache__/
