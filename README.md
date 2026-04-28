@@ -24,8 +24,8 @@ Demonstrated here on the [2025 Stack Overflow Developer Survey](https://survey.s
 
 ```
 MongoDB Atlas
-     ↓  scripts/ingest.py
-     │  (mongoexport → exasol-json-tables ingest-and-wrap)
+     ↓  scripts/load_mongodb.py → scripts/ingest_exasol.py
+     │  (file → MongoDB → mongoexport → exasol-json-tables)
      ↓
 RAW.SURVEY_DOCS  (Exasol)
      ↓  Agent 1 – Scientist
@@ -71,7 +71,7 @@ To reset and re-run from scratch:
 DROP SCHEMA RECIPES CASCADE;
 DROP SCHEMA ANALYTICS CASCADE;
 ```
-Then re-run `python3 scripts/ingest.py` and `Run full pipeline`.
+Then run `python3 scripts/ingest_exasol.py` and `Run full pipeline`.
 
 ---
 
@@ -85,6 +85,7 @@ Works with **any** MongoDB collection — swap the Stack Overflow survey for you
 |------|---------|
 | Python 3.10+ | `brew install python` or [python.org](https://python.org) |
 | pyexasol | `pip install pyexasol` |
+| pymongo | `pip install pymongo` |
 | Claude Code | `npm install -g @anthropic-ai/claude-code` |
 | MongoDB Atlas | Free M0 at [cloud.mongodb.com](https://cloud.mongodb.com) |
 | MongoDB Tools (mongoexport) | `brew install mongodb-database-tools` |
@@ -131,11 +132,16 @@ Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-lab
 }
 ```
 
-> `mongodb-mcp` is used only if you re-run `scripts/ingest.py` interactively. The pipeline agents connect to Exasol only.
+> `mongodb-mcp` is used only if you re-run `scripts/ingest_exasol.py` interactively. The pipeline agents connect to Exasol only.
 
 ### Steps
 
-1. **Load your data into MongoDB Atlas** — any collection, any schema. For the Stack Overflow example: download the 2025 survey CSV from [survey.stackoverflow.co/2025](https://survey.stackoverflow.co/2025), import it into `stackoverflow.survey_2025`.
+1. **Load your data into MongoDB** (once per dataset):
+   ```bash
+   python3 scripts/load_mongodb.py --file /path/to/your/data.csv
+   python3 scripts/load_mongodb.py --file /path/to/your/data.json
+   ```
+   Supports: `.csv` and `.json`/`.ndjson`. For the Stack Overflow example: download the 2025 survey CSV from [survey.stackoverflow.co/2025](https://survey.stackoverflow.co/2025).
 
 2. **Clone and open in Claude Code**
    ```bash
@@ -153,11 +159,16 @@ Download at [Exasol Community Edition](https://github.com/exasol-labs/exasol-lab
    EXASOL_PASSWORD=<your-password>
    ```
 
-4. **Ingest data** (one-time setup):
+4. **Export from MongoDB and load into Exasol** (once per dataset):
    ```bash
-   python3 scripts/ingest.py
+   python3 scripts/ingest_exasol.py
    ```
-   This runs `mongoexport`, ingests the NDJSON into Exasol via `exasol-json-tables`, and creates the `RECIPES` schema.
+   This exports whatever is in MongoDB and loads it into Exasol via `exasol-json-tables`. Run this again any time you want to refresh Exasol with latest MongoDB data.
+
+   > **Steps 1 and 4 are independent.**
+   > Already have data in MongoDB? Skip step 1, run step 4 only.
+   > Want to use a new dataset? Run step 1 with your new file, then step 4.
+   > MongoDB IP error? Update at: MongoDB Atlas → Security → Network Access
 
 5. **Verify your MCP connections**
    ```
