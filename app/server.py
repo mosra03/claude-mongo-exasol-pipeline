@@ -1,75 +1,111 @@
 #!/usr/bin/env python3
+import argparse
 import http.server
 import json
 import os
+import urllib.parse
 
-PORT = 8765
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-RECIPES_DIR = os.path.join(BASE_DIR, '..', 'recipes')
+import pyexasol
 
+ALLOWED_VIEWS = {
+    'REMOTE_WORK_PAY_PREMIUM',
+    'AI_ADOPTION_PAY_PARADOX',
+    'AI_THREAT_CONFIDENCE_PREMIUM',
+    'EXPERIENCE_VS_AI_ADOPTION',
+    'COUNTRY_COMPENSATION_MAP',
+}
 
-def load_charts():
-    manifest_path = os.path.join(RECIPES_DIR, '03_artist_manifest.json')
-    try:
-        with open(manifest_path) as f:
-            artist = json.load(f)
-    except FileNotFoundError:
-        raise RuntimeError(f'Artist manifest not found at {manifest_path} — run Agent 3 first.')
-    except json.JSONDecodeError as e:
-        raise RuntimeError(f'Invalid JSON in artist manifest: {e}')
+FILTER_COLS = {
+    'REMOTE_WORK_PAY_PREMIUM': ['RemoteWork'],
+    'AI_ADOPTION_PAY_PARADOX': ['AISelect'],
+    'AI_THREAT_CONFIDENCE_PREMIUM': ['AIThreat'],
+    'EXPERIENCE_VS_AI_ADOPTION': ['exp_bucket', 'AISelect'],
+    'COUNTRY_COMPENSATION_MAP': ['Country'],
+}
 
-    return [
-        {
-            'id': c['id'],
-            'question': c['question'],
-            'chart_type': c['chart_type'],
-            'insight': c.get('insight', ''),
-            'echarts_option': c['echarts_option'],
-        }
-        for c in artist['charts']
-    ]
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-class Handler(http.server.SimpleHTTPRequestHandler):
+def get_conn():
+    return pyexasol.connect(
+        dsn=f"{os.environ['EXASOL_HOST']}:{os.environ.get('EXASOL_PORT', '8563')}",
+        user=os.environ['EXASOL_USER'],
+        password=os.environ['EXASOL_PASSWORD'],
+        websocket_sslopt={'cert_reqs': 0},
+    )
+
+
+class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/api/data':
-            try:
-                body = json.dumps(load_charts()).encode()
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Content-Length', str(len(body)))
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(body)
-            except Exception as e:
-                body = json.dumps({'error': str(e)}).encode()
-                self.send_response(500)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Content-Length', str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-        elif self.path in ('/', '/index.html'):
-            path = os.path.join(BASE_DIR, 'index.html')
-            try:
-                with open(path, 'rb') as f:
-                    body = f.read()
-                self.send_response(200)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.send_header('Content-Length', str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-            except FileNotFoundError:
-                self.send_response(404)
-                self.end_headers()
+        parsed = urllib.parse.urlparse(self.path)
+        params = urllib.parse.parse_qs(parsed.query)
+
+        if parsed.path in ('/', '/index.html'):
+            self._serve_file()
+        elif parsed.path == '/api/query':
+            self._serve_query(params)
         else:
-            self.send_response(404)
-            self.end_headers()
+            self._send(404, {'error': 'not found'})
+
+    def _serve_file(self):
+        path = os.path.join(APP_DIR, 'index.html')
+        with open(path, 'rb') as f:
+            data = f.read()
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', len(data))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _serve_query(self, params):
+        view_name = params.get('view_name', [None])[0]
+        if not view_name or view_name.upper() not in ALLOWED_VIEWS:
+            self._send(400, {'error': f'view_name must be one of: {sorted(ALLOWED_VIEWS)}'})
+            return
+
+        view_name = view_name.upper()
+        allowed_filters = FILTER_COLS.get(view_name, [])
+
+        where_clauses = []
+        for col in allowed_filters:
+            val = params.get(col, [None])[0]
+            if val and val.lower() != 'all':
+                safe_val = val.replace("'", "''")
+                where_clauses.append(f'"{col}" = \'{safe_val}\'')
+
+        if where_clauses:
+            sql = f'SELECT * FROM ANALYTICS."{view_name}" WHERE {" AND ".join(where_clauses)}'
+        else:
+            sql = f'SELECT * FROM ANALYTICS."{view_name}"'
+
+        try:
+            conn = get_conn()
+            stmt = conn.execute(sql)
+            cols = list(stmt.columns().keys())
+            rows = [dict(zip(cols, row)) for row in stmt.fetchall()]
+            conn.close()
+            self._send(200, rows)
+        except Exception as e:
+            self._send(500, {'error': str(e)})
+
+    def _send(self, code, data):
+        body = json.dumps(data, default=str).encode('utf-8')
+        self.send_response(code)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Content-Length', len(body))
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(body)
 
     def log_message(self, fmt, *args):
-        pass  # suppress access logs
+        pass
 
 
 if __name__ == '__main__':
-    with http.server.HTTPServer(('', PORT), Handler) as httpd:
-        print(f'Server running at http://localhost:{PORT}', flush=True)
-        httpd.serve_forever()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=8080)
+    args = parser.parse_args()
+
+    with http.server.HTTPServer(('', args.port), Handler) as srv:
+        print(f'Server running at http://localhost:{args.port}')
+        srv.serve_forever()

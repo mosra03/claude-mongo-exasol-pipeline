@@ -1,22 +1,12 @@
 {
   "agent_name": "Postman",
   "status": "complete",
-  "timestamp": "2026-04-27T10:34:32Z",
-  "source_recipe": "recipes/03_artist_manifest.json",
+  "timestamp": "2026-04-28T12:26:51.335710+00:00",
   "delivery": {
-    "local_url": "http://localhost:8765",
-    "public_url": "https://<tunnel>.trycloudflare.com",
-    "port": 8765,
+    "local_url": "http://localhost:8080",
+    "public_url": "https://flag-makers-eagles-maiden.trycloudflare.com",
+    "port": 8080,
     "server_file": "app/server.py",
-    "app_file": "app/index.html",
-    "charts_served": 5,
-    "api_endpoint": "/api/data"
-  },
-  "charts": [
-    {"id": 1, "type": "bar",            "title": "AI Adoption vs Compensation — The Productivity Paradox"},
-    {"id": 2, "type": "choropleth",     "title": "Global Salary Landscape — A 5× Gap from US to India"},
-    {"id": 3, "type": "grouped_bar",    "title": "Remote Work Premium — Full Remote Pays 58% More Than In-Person"},
-    {"id": 4, "type": "horizontal_bar", "title": "AI Model Market Share — GPT Leads but Claude Holds Strong #2"},
-    {"id": 5, "type": "line",           "title": "AI Job Threat by Experience — Beginners Most Anxious, Veterans Most Confident"}
-  ]
+    "app_file": "app/index.html"
+  }
 }
