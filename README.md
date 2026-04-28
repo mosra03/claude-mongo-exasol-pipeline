@@ -18,6 +18,8 @@ Demonstrated here on the [2025 Stack Overflow Developer Survey](https://survey.s
 
 ## How it works
 
+![Architecture](assets/architecture.svg)
+
 ### Data flow
 
 ```
