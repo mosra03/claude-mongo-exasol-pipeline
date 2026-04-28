@@ -13,6 +13,7 @@ Optional env vars: EXASOL_PORT (default 8563)
 import argparse
 import json
 import os
+import ssl
 import subprocess
 import sys
 import time
@@ -54,7 +55,12 @@ def main():
     # Step 3: Test Exasol connection
     import pyexasol
     try:
-        conn = pyexasol.connect(dsn=f"{host}:{port}", user=user, password=password)
+        conn = pyexasol.connect(
+            dsn=f"{os.environ['EXASOL_HOST']}:{os.environ.get('EXASOL_PORT', '8563')}",
+            user=os.environ['EXASOL_USER'],
+            password=os.environ['EXASOL_PASSWORD'],
+            websocket_sslopt={"cert_reqs": ssl.CERT_NONE}
+        )
         print(f"✓ Connected to Exasol: {host}")
     except Exception as e:
         print("ERROR: Cannot connect to Exasol. Is the cluster running at cloud.exasol.com?")

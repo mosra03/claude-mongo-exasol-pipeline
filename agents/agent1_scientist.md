@@ -1,17 +1,17 @@
 # Agent 1 · Scientist
 
-**Job:** Explore `RAW.SURVEY_DOCS` in Exasol, discover 5 chart-worthy cross-dimensional patterns, write results to `RECIPES.SCIENTIST`.
+**Job:** Explore `RAW_WRAPPER."survey_raw"` in Exasol, discover 5 chart-worthy cross-dimensional patterns, write results to `RECIPES.SCIENTIST`.
 
 **Single prompt trigger:** `Run agent 1 - Scientist`
 
 ## Data source
-- **Exasol only** — table `RAW.SURVEY_DOCS` (49,191 rows, loaded via exasol-json-tables)
+- **Exasol only** — table `RAW_WRAPPER."survey_raw"` (49,191 rows, 174 columns, loaded via exasol-json-tables)
 - Fields are queryable via JSON path syntax: `"AISelect"`, `"ConvertedCompYearly"`, `"Country"`, etc.
 - Connect via **Exasol MCP** — do not use MongoDB MCP for this agent.
 
 ## Steps
 
-1. Use Exasol MCP to inspect `RAW.SURVEY_DOCS`: sample 10–20 rows, check available fields and data types.
+1. Use Exasol MCP to inspect `RAW_WRAPPER."survey_raw"`: sample 10–20 rows, check available fields and data types.
 2. Run exploratory queries to understand value distributions for key fields: `ConvertedCompYearly`, `AISelect`, `Country`, `RemoteWork`, `YearsCode`, `AIThreat`, `AIModelsHaveWorkedWith`, `JobSat`.
 3. Select exactly 5 patterns. Each pattern must be:
    - **Cross-dimensional** — two or more fields in tension (e.g. compensation × AI adoption)
@@ -51,7 +51,7 @@ The `payload` JSON must have this structure:
       "field_x": "<primary field>",
       "field_y": "<secondary field>",
       "chart_type": "bar",
-      "sample_query": "<SQL SELECT against RAW.SURVEY_DOCS>"
+      "sample_query": "<SQL SELECT against RAW_WRAPPER.\"survey_raw\">"
     }
   ]
 }

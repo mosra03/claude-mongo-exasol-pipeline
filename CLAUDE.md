@@ -9,7 +9,7 @@ Data app built on the 2025 Stack Overflow Developer Survey (49,191 respondents).
 These phrases trigger a specific agent. Use them exactly as written:
 
 ```
-Run agent 1 - Scientist    → query RAW.SURVEY_DOCS, find 5 patterns, write to RECIPES.SCIENTIST
+Run agent 1 - Scientist    → query RAW_WRAPPER."survey_raw", find 5 patterns, write to RECIPES.SCIENTIST
 Run agent 2 - Chef         → read RECIPES.SCIENTIST, create ANALYTICS views, write to RECIPES.CHEF
 Run agent 3 - Artist       → read RECIPES.CHEF, query ANALYTICS views, generate app/server.py + app/index.html
 Run agent 4 - Postman      → install deps, start server, open tunnel, write recipes/04_postman_delivery.json
@@ -20,7 +20,7 @@ Run full pipeline          → ingest → Scientist → Chef → Artist → Post
 
 When "Run full pipeline" is triggered:
 
-0. **Ingest** (skip if `RAW.SURVEY_DOCS` already has rows): run `python3 scripts/ingest.py`
+0. **Ingest** (skip if `RAW_WRAPPER."survey_raw"` already has rows): run `python3 scripts/ingest.py`
 1. **Agent 1 (Scientist).** After it finishes, validate:
    ```sql
    SELECT COUNT(*) FROM RECIPES.SCIENTIST WHERE status = 'complete';
@@ -60,7 +60,7 @@ Each view is filterable via `WHERE 1=1` clauses that the server appends dynamica
 ## Data sources
 
 - **MongoDB Atlas** — `stackoverflow.survey_2025` — source only; exported to NDJSON by `scripts/ingest.py`
-- **Exasol SaaS** — `RAW.SURVEY_DOCS` — single source of truth for all agents and the live data app
+- **Exasol SaaS** — `RAW_WRAPPER."survey_raw"` (174 cols, 49,191 rows) + `RAW."survey_raw__id"` — single source of truth for all agents and the live data app
 
 ## MCP servers required
 
@@ -73,7 +73,7 @@ Each view is filterable via `WHERE 1=1` clauses that the server appends dynamica
 
 ```sql
 -- Raw data loaded
-SELECT COUNT(*) FROM RAW.SURVEY_DOCS;
+SELECT COUNT(*) FROM RAW_WRAPPER."survey_raw";
 
 -- Agent 1 complete
 SELECT COUNT(*) FROM RECIPES.SCIENTIST WHERE status = 'complete';

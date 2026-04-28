@@ -11,14 +11,14 @@ SELECT COUNT(*) FROM RECIPES.SCIENTIST WHERE status = 'complete';
 Must return > 0. If not, stop and report: **Agent 1 has not completed — run Agent 1 first.**
 
 ## Data source
-- **Exasol only** — reads from `RECIPES.SCIENTIST` and queries `RAW.SURVEY_DOCS`
+- **Exasol only** — reads from `RECIPES.SCIENTIST` and queries `RAW_WRAPPER."survey_raw"`
 - Connect via **Exasol MCP** — do not use MongoDB MCP.
 
 ## Steps
 
 For each pattern in the `payload` from `RECIPES.SCIENTIST`:
 
-1. Write a SQL query against `RAW.SURVEY_DOCS` that produces a clean result set (≤ 200 rows).
+1. Write a SQL query against `RAW_WRAPPER."survey_raw"` that produces a clean result set (≤ 200 rows).
 2. Apply data quality rules:
    - Exclude rows where the relevant fields are `NULL` or `'NA'`
    - Cast numeric strings to `DOUBLE`: `CAST(field AS DOUBLE)`
@@ -30,7 +30,7 @@ For each pattern in the `payload` from `RECIPES.SCIENTIST`:
 
    CREATE OR REPLACE VIEW ANALYTICS.<pattern_name> AS
    SELECT <columns>
-   FROM RAW.SURVEY_DOCS
+   FROM RAW_WRAPPER."survey_raw"
    WHERE 1=1
      AND <field> IS NOT NULL
      AND <field> != 'NA'

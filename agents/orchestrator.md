@@ -19,10 +19,10 @@ scripts/ingest.py → Agent 1 → Agent 2 → Agent 3 → Agent 4
 ```
 
 ### Step 0 — Ingest (pre-pipeline)
-Run `python3 scripts/ingest.py` to export MongoDB → NDJSON → Exasol `RAW.SURVEY_DOCS` and create `RECIPES` schema.
-Skip if `RAW.SURVEY_DOCS` already has rows:
+Run `python3 scripts/ingest.py` to export MongoDB → NDJSON → Exasol `RAW_WRAPPER."survey_raw"` and create `RECIPES` schema.
+Skip if `RAW_WRAPPER."survey_raw"` already has rows:
 ```sql
-SELECT COUNT(*) FROM RAW.SURVEY_DOCS;
+SELECT COUNT(*) FROM RAW_WRAPPER."survey_raw";
 ```
 
 ### After Agent 1 — Scientist validation
@@ -74,7 +74,7 @@ Then re-run `scripts/ingest.py` and the full pipeline.
 
 | What to check | SQL / command |
 |---------------|---------------|
-| Raw data loaded | `SELECT COUNT(*) FROM RAW.SURVEY_DOCS` |
+| Raw data loaded | `SELECT COUNT(*) FROM RAW_WRAPPER."survey_raw"` |
 | Agent 1 complete | `SELECT COUNT(*) FROM RECIPES.SCIENTIST WHERE status = 'complete'` |
 | Agent 2 complete | `SELECT COUNT(*) FROM RECIPES.CHEF WHERE status = 'complete'` |
 | Analytics views built | `SELECT COUNT(*) FROM EXA_ALL_VIEWS WHERE VIEW_SCHEMA = 'ANALYTICS'` |
