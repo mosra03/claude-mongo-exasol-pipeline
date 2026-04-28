@@ -20,24 +20,6 @@ Demonstrated here on the [2025 Stack Overflow Developer Survey](https://survey.s
 
 ![Architecture](assets/architecture.svg)
 
-### Data flow
-
-```
-MongoDB Atlas
-     ↓  scripts/load_mongodb.py  (CSV/JSON → MongoDB — once per dataset)
-     ↓  scripts/ingest.py        (mongoexport → exasol-json-tables ingest-and-wrap)
-     ↓
-RAW_WRAPPER."survey_raw"  (Exasol — single source of truth)
-     ↓  Agent 1 – Scientist
-RECIPES.SCIENTIST  (Exasol table)
-     ↓  Agent 2 – Chef
-RECIPES.CHEF  (Exasol table)
-ANALYTICS.*   (5 Exasol views)
-     ↓  Agent 3 – Artist
-app/server.py + app/index.html
-     ↓  Agent 4 – Postman
-Public URL (cloudflared)
-```
 
 | Agent | Data source | What it does |
 |-------|-------------|--------------|
