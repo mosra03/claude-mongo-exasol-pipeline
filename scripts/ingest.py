@@ -108,7 +108,7 @@ def step3_create_recipe_tables():
             status          VARCHAR(20)      DEFAULT 'pending',
             created_at      TIMESTAMP,
             pattern_count   INT,
-            payload         VARCHAR(2000000)
+            payload         VARCHAR(1000000)
         )""",
 
         """CREATE TABLE IF NOT EXISTS RECIPES.CHEF (
@@ -117,7 +117,7 @@ def step3_create_recipe_tables():
             status          VARCHAR(20)      DEFAULT 'pending',
             created_at      TIMESTAMP,
             view_count      INT,
-            payload         VARCHAR(2000000)
+            payload         VARCHAR(1000000)
         )""",
 
         "CREATE SCHEMA IF NOT EXISTS ANALYTICS",
